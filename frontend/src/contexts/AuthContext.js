@@ -14,14 +14,17 @@ export function AuthProvider({ children }) {
   // Login with username (auto-creates account if doesn't exist)
   async function login(username) {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ username }),
-      });
+      const response = await fetch(
+        "https://cp-zontana-production.up.railway.app/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ username }),
+        }
+      );
 
       const data = await response.json();
 
@@ -40,10 +43,13 @@ export function AuthProvider({ children }) {
   // Logout
   async function logout() {
     try {
-      await fetch("http://localhost:8080/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await fetch(
+        "https://cp-zontana-production.up.railway.app/api/auth/logout",
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       setCurrentUser(null);
     } catch (err) {
@@ -54,14 +60,17 @@ export function AuthProvider({ children }) {
   // Update user avatar
   async function updateAvatar(avatar) {
     try {
-      const response = await fetch("http://localhost:8080/api/user/avatar", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ avatar }),
-      });
+      const response = await fetch(
+        "https://cp-zontana-production.up.railway.app/api/user/avatar",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ avatar }),
+        }
+      );
 
       const data = await response.json();
 
@@ -81,9 +90,12 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const response = await fetch("http://localhost:8080/api/auth/me", {
-          credentials: "include",
-        });
+        const response = await fetch(
+          "https://cp-zontana-production.up.railway.app/api/auth/me",
+          {
+            credentials: "include",
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();

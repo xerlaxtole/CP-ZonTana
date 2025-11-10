@@ -1,0 +1,10 @@
+# Ignore node modules and local env
+node_modules
+npm-debug.log
+.env
+
+# Ignore frontend and other repo files not needed in the server image
+frontend
+README.md
+.git
+.gitignore

@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // IMPORTANT: Load environment variables FIRST before any other imports
 // Specify the path to .env file relative to this file's location
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 import express from "express";
 import cors from "cors";
@@ -25,7 +25,15 @@ import userRoutes from "./routes/user.js";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "https://cp-zon-tana.vercel.app",
+      "https://cp-zontana-production.up.railway.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -48,7 +56,10 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: [
+      "https://cp-zon-tana.vercel.app",
+      "https://cp-zontana-production.up.railway.app",
+    ],
     credentials: true,
   },
 });
