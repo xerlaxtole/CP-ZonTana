@@ -26,13 +26,10 @@ import userRoutes from "./routes/user.js";
 const app = express();
 
 app.use(
-  cors({
-    origin: [
-      "https://cp-zon-tana.vercel.app",
-      "https://cp-zontana-production.up.railway.app",
-    ],
-    credentials: true,
-  })
+	cors({
+		origin: "*",
+		credentials: true,
+	})
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -51,17 +48,14 @@ app.use("/api/message", chatMessageRoutes);
 app.use("/api/user", userRoutes);
 
 const server = app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+	console.log(`Server listening on port ${PORT}`);
 });
 
 const io = new Server(server, {
-  cors: {
-    origin: [
-      "https://cp-zon-tana.vercel.app",
-      "https://cp-zontana-production.up.railway.app",
-    ],
-    credentials: true,
-  },
+	cors: {
+		origin: "*",
+		credentials: true,
+	},
 });
 
 io.use(VerifySocketToken);
@@ -69,32 +63,35 @@ io.use(VerifySocketToken);
 global.onlineUsers = new Map();
 
 const getKey = (map, val) => {
-  for (let [key, value] of map.entries()) {
-    if (value === val) return key;
-  }
+	for (let [key, value] of map.entries()) {
+		if (value === val) return key;
+	}
 };
 
 io.on("connection", (socket) => {
-  global.chatSocket = socket;
+	global.chatSocket = socket;
 
-  socket.on("addUser", (userId) => {
-    onlineUsers.set(userId, socket.id);
-    socket.emit("getUsers", Array.from(onlineUsers));
-  });
+	socket.on("addUser", (userId) => {
+		onlineUsers.set(userId, socket.id);
+		socket.emit("getUsers", Array.from(onlineUsers));
+	});
 
-  socket.on("sendMessage", ({ senderId, receiverId, message, chatRoomId }) => {
-    const sendUserSocket = onlineUsers.get(receiverId);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("getMessage", {
-        senderId,
-        message,
-        chatRoomId,
-      });
-    }
-  });
+	socket.on(
+		"sendMessage",
+		({ senderId, receiverId, message, chatRoomId }) => {
+			const sendUserSocket = onlineUsers.get(receiverId);
+			if (sendUserSocket) {
+				socket.to(sendUserSocket).emit("getMessage", {
+					senderId,
+					message,
+					chatRoomId,
+				});
+			}
+		}
+	);
 
-  socket.on("disconnect", () => {
-    onlineUsers.delete(getKey(onlineUsers, socket.id));
-    socket.emit("getUsers", Array.from(onlineUsers));
-  });
+	socket.on("disconnect", () => {
+		onlineUsers.delete(getKey(onlineUsers, socket.id));
+		socket.emit("getUsers", Array.from(onlineUsers));
+	});
 });
