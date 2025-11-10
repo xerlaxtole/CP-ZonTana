@@ -9,6 +9,7 @@ axios.defaults.withCredentials = true;
 export const initiateSocketConnection = () => {
   const socket = io("https://cp-zontana-production.up.railway.app/", {
     withCredentials: true, // Send cookies with Socket.IO connection
+    transports: ['websocket', 'polling'], // Match server configuration
   });
 
   return socket;
