@@ -27,7 +27,10 @@ const app = express();
 
 app.use(
 	cors({
-		origin: "*",
+		origin: [
+			"https://cp-zontana-production.up.railway.app",
+			"http://localhost:3000",
+		],
 		credentials: true,
 	})
 );
@@ -53,7 +56,10 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server, {
 	cors: {
-		origin: "*",
+		origin: [
+			"https://cp-zontana-production.up.railway.app",
+			"http://localhost:3000",
+		],
 		credentials: true,
 	},
 });
