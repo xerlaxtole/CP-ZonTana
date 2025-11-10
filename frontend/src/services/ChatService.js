@@ -1,13 +1,13 @@
 import axios from "axios";
 import { io } from "socket.io-client";
 
-const baseURL = "http://localhost:8080/api";
+const baseURL = "https://cp-zontana-production.up.railway.app/api";
 
 // Configure axios to include credentials (cookies) with requests
 axios.defaults.withCredentials = true;
 
 export const initiateSocketConnection = () => {
-  const socket = io("http://localhost:8080", {
+  const socket = io("https://cp-zontana-production.up.railway.app/", {
     withCredentials: true, // Send cookies with Socket.IO connection
   });
 
