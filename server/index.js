@@ -26,7 +26,7 @@ import userRoutes from "./routes/user.js";
 const app = express();
 
 // Trust Railway's proxy for proper WebSocket handling
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 app.use(
 	cors({
@@ -66,7 +66,7 @@ const io = new Server(server, {
 		credentials: true,
 	},
 	// Configure transports for Railway's proxy environment
-	transports: ['websocket', 'polling'],
+	transports: ["websocket", "polling"],
 	// Connection stability settings
 	pingTimeout: 60000,
 	pingInterval: 25000,
