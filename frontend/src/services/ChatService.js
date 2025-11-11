@@ -117,3 +117,91 @@ export const sendMessage = async (messageBody) => {
     console.error(e);
   }
 };
+
+// Group Chat API functions
+export const createGroupChatRoom = async (groupData) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.post(`${baseURL}/group`, groupData, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};
+
+export const getAllGroupChatRooms = async () => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(`${baseURL}/group/all`, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const getGroupChatRoomsOfUser = async (userId) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(`${baseURL}/group/user/${userId}`, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const joinGroupChatRoom = async (groupId, userId) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.post(
+      `${baseURL}/group/${groupId}/join`,
+      { userId },
+      header
+    );
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};
+
+export const getGroupChatRoomById = async (groupId) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(`${baseURL}/group/${groupId}`, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const getGroupMessages = async (groupChatRoomId) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(
+      `${baseURL}/group/${groupChatRoomId}/messages`,
+      header
+    );
+    return res.data;
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const sendGroupMessage = async (messageBody) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.post(`${baseURL}/group/message`, messageBody, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};
