@@ -16,9 +16,9 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
 
 	useEffect(() => {
 		// Filter out groups the user is already a member of
-		const myGroupIds = myGroups.map((group) => group.id);
+		const myGroupIds = myGroups.map((group) => group._id);
 		const available = allGroups.filter(
-			(group) => !myGroupIds.includes(group.id)
+			(group) => !myGroupIds.includes(group._id)
 		);
 		setAvailableGroups(available);
 	}, [allGroups, myGroups]);
@@ -30,7 +30,7 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
 
 	const handleJoinGroup = async (group) => {
 		try {
-			await joinGroupChatRoom(group.id, currentUser.id);
+			await joinGroupChatRoom(group._id, currentUser._id);
 			// Refresh groups to update the lists
 			await refreshGroups();
 			// Automatically switch to the newly joined group
@@ -65,7 +65,7 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
 					) : (
 						myGroups.map((group, index) => (
 							<li
-								key={group.id}
+								key={group._id}
 								className={classNames(
 									index === selectedChat
 										? "bg-gray-100 dark:bg-gray-700"
@@ -114,7 +114,7 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
 					) : (
 						availableGroups.map((group) => (
 							<li
-								key={group.id}
+								key={group._id}
 								className="flex items-center justify-between px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700"
 							>
 								<div className="flex items-center gap-3 flex-1 min-w-0">

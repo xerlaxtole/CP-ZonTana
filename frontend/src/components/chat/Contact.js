@@ -4,20 +4,20 @@ import { getUser } from "../../services/ChatService";
 import UserLayout from "../layouts/UserLayout";
 
 export default function Contact({ chatRoom, onlineUsersId, currentUser }) {
-  const [contact, setContact] = useState();
+	const [contact, setContact] = useState();
 
-  useEffect(() => {
-    const contactId = chatRoom.members?.find(
-      (member) => member !== currentUser.username
-    );
+	useEffect(() => {
+		const contactId = chatRoom.members?.find(
+			(memberId) => memberId !== currentUser._id
+		);
 
-    const fetchData = async () => {
-      const res = await getUser(contactId);
-      setContact(res);
-    };
+		const fetchData = async () => {
+			const res = await getUser(contactId);
+			setContact(res);
+		};
 
-    fetchData();
-  }, [chatRoom, currentUser]);
+		fetchData();
+	}, [chatRoom, currentUser]);
 
-  return <UserLayout user={contact} onlineUsersId={onlineUsersId} />;
+	return <UserLayout user={contact} onlineUsersId={onlineUsersId} />;
 }

@@ -26,7 +26,7 @@ export const ChatProvider = ({ children }) => {
 	const [socketError, setSocketError] = useState(null);
 
 	// Online status (mirrors server's global.onlineUsers)
-	const [onlineUsersId, setOnlineUsersId] = useState([]);
+	const [onlineUsersIds, setOnlineUsersIds] = useState([]);
 
 	// Users & Direct Chats
 	const [users, setUsers] = useState([]);
@@ -56,6 +56,8 @@ export const ChatProvider = ({ children }) => {
 			setSocketError("User not authenticated");
 			return;
 		}
+
+		socket.connect();
 
 		// Connection successful
 		socket.on("connect", () => {
@@ -105,7 +107,8 @@ export const ChatProvider = ({ children }) => {
 
 		// Listen for online users update (mirrors server's global.onlineUsers)
 		socket.on("getUsers", (users) => {
-			setOnlineUsersId(users.map((u) => u.userId));
+			console.log("ChatContext: Online users updated:", users);
+			setOnlineUsersIds(users);
 		});
 
 		// Listen for incoming direct messages
@@ -118,6 +121,18 @@ export const ChatProvider = ({ children }) => {
 		socket.on("getGroupMessage", (data) => {
 			// Message will be handled by GroupChatRoom component
 		});
+
+		return () => {
+			socket.off("connect");
+			socket.off("connect_error");
+			socket.off("disconnect");
+			socket.off("getUsers");
+			socket.off("getMessage");
+			socket.off("getGroupMessage");
+
+			socket.disconnect();
+			console.log("ChatContext: Socket disconnected on cleanup");
+		};
 	}, [currentUser]);
 
 	// Fetch users on mount
@@ -161,9 +176,9 @@ export const ChatProvider = ({ children }) => {
 	// Fetch all users
 	const fetchUsers = async () => {
 		try {
-			const response = await getAllUsers();
-			setUsers(response.data);
-			setFilteredUsers(response.data);
+			const data = await getAllUsers();
+			setUsers(data);
+			setFilteredUsers(data);
 		} catch (error) {
 			console.error("Error fetching users:", error);
 		}
@@ -172,9 +187,9 @@ export const ChatProvider = ({ children }) => {
 	// Fetch chat rooms
 	const fetchChatRooms = async () => {
 		try {
-			const response = await getChatRooms(currentUser._id);
-			setChatRooms(response.data);
-			setFilteredRooms(response.data);
+			const data = await getChatRooms(currentUser._id);
+			setChatRooms(data);
+			setFilteredRooms(data);
 		} catch (error) {
 			console.error("Error fetching chat rooms:", error);
 		}
@@ -187,8 +202,8 @@ export const ChatProvider = ({ children }) => {
 				getAllGroupChatRooms(),
 				getGroupChatRoomsOfUser(currentUser._id),
 			]);
-			setAllGroups(allGroupsRes.data);
-			setMyGroups(myGroupsRes.data);
+			setAllGroups(allGroupsRes);
+			setMyGroups(myGroupsRes);
 		} catch (error) {
 			console.error("Error fetching groups:", error);
 		}
@@ -235,7 +250,7 @@ export const ChatProvider = ({ children }) => {
 
 	// Check if user is online
 	const isUserOnline = (userId) => {
-		return onlineUsersId.includes(userId);
+		return onlineUsersIds.includes(userId);
 	};
 
 	const value = {
@@ -245,7 +260,7 @@ export const ChatProvider = ({ children }) => {
 		socketError,
 
 		// Online status
-		onlineUsersId,
+		onlineUsersId: onlineUsersIds,
 		isUserOnline,
 
 		// Users & Direct Chats
@@ -282,11 +297,6 @@ export const ChatProvider = ({ children }) => {
 		refreshChatRooms,
 		fetchGroups,
 	};
-
-	// Wait for authentication - don't render children until user is available
-	if (!currentUser) {
-		return null;
-	}
 
 	return (
 		<ChatContext.Provider value={value}>{children}</ChatContext.Provider>

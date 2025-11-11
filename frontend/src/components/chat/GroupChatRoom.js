@@ -18,12 +18,12 @@ export default function GroupChatRoom() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const res = await getGroupMessages(currentChat.id);
+			const res = await getGroupMessages(currentChat._id);
 			setMessages(res);
 		};
 
 		fetchData();
-	}, [currentChat.id]);
+	}, [currentChat._id]);
 
 	useEffect(() => {
 		scrollRef.current?.scrollIntoView({
@@ -33,7 +33,7 @@ export default function GroupChatRoom() {
 
 	useEffect(() => {
 		const handleGetGroupMessage = (data) => {
-			if (data.groupChatRoomId === currentChat.id) {
+			if (data.groupChatRoomId === currentChat._id) {
 				setIncomingMessage({
 					sender: data.senderId,
 					message: data.message,
@@ -47,7 +47,7 @@ export default function GroupChatRoom() {
 		return () => {
 			socket?.off("getGroupMessage", handleGetGroupMessage);
 		};
-	}, [socket, currentChat.id]);
+	}, [socket, currentChat._id]);
 
 	useEffect(() => {
 		incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
@@ -55,14 +55,14 @@ export default function GroupChatRoom() {
 
 	const handleFormSubmit = async (message) => {
 		socket?.emit("sendGroupMessage", {
-			senderId: currentUser.id,
+			senderId: currentUser._id,
 			message: message,
-			groupChatRoomId: currentChat.id,
+			groupChatRoomId: currentChat._id,
 		});
 
 		const messageBody = {
-			groupChatRoomId: currentChat.id,
-			sender: currentUser.id,
+			groupChatRoomId: currentChat._id,
+			sender: currentUser._id,
 			message: message,
 		};
 		const res = await sendGroupMessage(messageBody);
@@ -106,7 +106,7 @@ export default function GroupChatRoom() {
 							<div key={index} ref={scrollRef}>
 								<Message
 									message={message}
-									self={currentUser.id}
+									self={currentUser._id}
 									isGroupChat={true}
 								/>
 							</div>

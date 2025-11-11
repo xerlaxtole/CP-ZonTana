@@ -18,12 +18,12 @@ export default function ChatRoom() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const res = await getMessagesOfChatRoom(currentChat.id);
+			const res = await getMessagesOfChatRoom(currentChat._id);
 			setMessages(res);
 		};
 
 		fetchData();
-	}, [currentChat.id]);
+	}, [currentChat._id]);
 
 	useEffect(() => {
 		scrollRef.current?.scrollIntoView({
@@ -33,7 +33,7 @@ export default function ChatRoom() {
 
 	useEffect(() => {
 		const handleGetMessage = (data) => {
-			if (data.chatRoomId === currentChat.id) {
+			if (data.chatRoomId === currentChat._id) {
 				setIncomingMessage({
 					sender: data.senderId,
 					message: data.message,
@@ -46,7 +46,7 @@ export default function ChatRoom() {
 		return () => {
 			socket?.off("getMessage", handleGetMessage);
 		};
-	}, [socket, currentChat.id]);
+	}, [socket, currentChat._id]);
 
 	useEffect(() => {
 		incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
@@ -54,19 +54,19 @@ export default function ChatRoom() {
 
 	const handleFormSubmit = async (message) => {
 		const receiverId = currentChat.members.find(
-			(member) => member.id !== currentUser.id
+			(member) => member._id !== currentUser._id
 		);
 
 		socket?.emit("sendMessage", {
-			senderId: currentUser.id,
+			senderId: currentUser._id,
 			receiverId: receiverId.id,
 			message: message,
-			chatRoomId: currentChat.id,
+			chatRoomId: currentChat._id,
 		});
 
 		const messageBody = {
-			chatRoomId: currentChat.id,
-			sender: currentUser.id,
+			chatRoomId: currentChat._id,
+			sender: currentUser._id,
 			message: message,
 		};
 		const res = await sendMessage(messageBody);
@@ -86,7 +86,7 @@ export default function ChatRoom() {
 							<div key={index} ref={scrollRef}>
 								<Message
 									message={message}
-									self={currentUser.id}
+									self={currentUser._id}
 								/>
 							</div>
 						))}

@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
 				throw new Error(data.message || "Login failed");
 			}
 
-			setCurrentUser(data.user);
+			setCurrentUser(data);
 			return data;
 		} catch (err) {
 			setError(err.message);
@@ -76,7 +76,7 @@ export function AuthProvider({ children }) {
 				throw new Error(data.message || "Avatar update failed");
 			}
 
-			setCurrentUser(data.user);
+			setCurrentUser(data);
 			return data;
 		} catch (err) {
 			setError(err.message);
@@ -94,7 +94,7 @@ export function AuthProvider({ children }) {
 
 				if (response.ok) {
 					const data = await response.json();
-					setCurrentUser(data.user);
+					setCurrentUser(data);
 				}
 			} catch (err) {
 				console.error("Auth check error:", err);

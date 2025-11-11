@@ -3,11 +3,7 @@ import { isValidAvatar } from "../utils/avatars.js";
 
 export const getAllUsers = async (req, res) => {
 	try {
-		const users = await User.find()
-			.select("username avatar")
-			.limit(10)
-			.sort({ createdAt: -1 });
-
+		const users = await User.find().limit(10).sort({ createdAt: -1 });
 		res.status(200).json(users);
 	} catch (error) {
 		console.error("Get all users error:", error);
@@ -17,7 +13,7 @@ export const getAllUsers = async (req, res) => {
 
 export const getUser = async (req, res) => {
 	try {
-		const user = await User.findOne({ username: req.params.userId }).select(
+		const user = await User.findOne({ _id: req.params.userId }).select(
 			"username avatar"
 		);
 
