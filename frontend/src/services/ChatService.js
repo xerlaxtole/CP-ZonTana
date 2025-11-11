@@ -1,13 +1,15 @@
 import axios from "axios";
 import { io } from "socket.io-client";
 
-const baseURL = "https://cp-zontana-production.up.railway.app/api";
+// Use environment variables for API URLs
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:8080/api";
+const socketURL = process.env.REACT_APP_SOCKET_URL || "http://localhost:8080";
 
 // Configure axios to include credentials (cookies) with requests
 axios.defaults.withCredentials = true;
 
 export const initiateSocketConnection = () => {
-  const socket = io("https://cp-zontana-production.up.railway.app/", {
+  const socket = io(socketURL, {
     withCredentials: true, // Send cookies with Socket.IO connection
     transports: ['websocket', 'polling'], // Match server configuration
   });

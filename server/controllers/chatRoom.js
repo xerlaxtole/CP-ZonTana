@@ -1,11 +1,24 @@
 import ChatRoom from "../models/ChatRoom.js";
 
 export const createChatRoom = async (req, res) => {
-  const newChatRoom = new ChatRoom({
-    members: [req.body.senderId, req.body.receiverId],
-  });
+  const { senderId, receiverId } = req.body;
 
   try {
+    // Check if chatroom already exists between these two users
+    const existingChatRoom = await ChatRoom.findOne({
+      members: { $all: [senderId, receiverId] },
+    });
+
+    // If chatroom exists, return it instead of creating a new one
+    if (existingChatRoom) {
+      return res.status(200).json(existingChatRoom);
+    }
+
+    // Create new chatroom if it doesn't exist
+    const newChatRoom = new ChatRoom({
+      members: [senderId, receiverId],
+    });
+
     await newChatRoom.save();
     res.status(201).json(newChatRoom);
   } catch (error) {

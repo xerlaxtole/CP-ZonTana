@@ -2,6 +2,9 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
+// Use environment variables for API URL
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080/api";
+
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -15,7 +18,7 @@ export function AuthProvider({ children }) {
   async function login(username) {
     try {
       const response = await fetch(
-        "https://cp-zontana-production.up.railway.app/api/auth/login",
+        `${API_URL}/auth/login`,
         {
           method: "POST",
           headers: {
@@ -44,7 +47,7 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       await fetch(
-        "https://cp-zontana-production.up.railway.app/api/auth/logout",
+        `${API_URL}/auth/logout`,
         {
           method: "POST",
           credentials: "include",
@@ -61,7 +64,7 @@ export function AuthProvider({ children }) {
   async function updateAvatar(avatar) {
     try {
       const response = await fetch(
-        "https://cp-zontana-production.up.railway.app/api/user/avatar",
+        `${API_URL}/user/avatar`,
         {
           method: "PATCH",
           headers: {
@@ -91,7 +94,7 @@ export function AuthProvider({ children }) {
     async function checkAuth() {
       try {
         const response = await fetch(
-          "https://cp-zontana-production.up.railway.app/api/auth/me",
+          `${API_URL}/auth/me`,
           {
             credentials: "include",
           }
