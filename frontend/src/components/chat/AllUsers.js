@@ -46,7 +46,17 @@ export default function AllUsers({
       receiverId: user.username,
     };
     const res = await createChatRoom(members);
-    setChatRooms((prev) => [...prev, res]);
+
+    // Check if chatroom already exists in state (backend returns existing one)
+    const existingChatRoomIndex = chatRooms.findIndex(
+      (chatRoom) => chatRoom._id === res._id
+    );
+
+    // Only add to state if it's a new chatroom
+    if (existingChatRoomIndex === -1) {
+      setChatRooms((prev) => [...prev, res]);
+    }
+
     changeChat(res);
   };
 
