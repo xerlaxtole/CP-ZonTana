@@ -1,15 +1,8 @@
-import { useEffect, useRef, useState } from "react";
 import { ChatIcon, UserGroupIcon } from "@heroicons/react/outline";
 
-import {
-	getAllUsers,
-	getChatRooms,
-	initiateSocketConnection,
-	getAllGroupChatRooms,
-	getGroupChatRoomsOfUser,
-	createGroupChatRoom,
-} from "../../services/ChatService";
+import { createGroupChatRoom } from "../../services/ChatService";
 import { useAuth } from "../../contexts/AuthContext";
+import { useChat } from "../../contexts/ChatContext";
 
 import ChatRoom from "../chat/ChatRoom";
 import GroupChatRoom from "../chat/GroupChatRoom";
@@ -20,102 +13,25 @@ import SearchUsers from "../chat/SearchUsers";
 import CreateGroupModal from "../chat/CreateGroupModal";
 
 export default function ChatLayout() {
-	const [users, SetUsers] = useState([]);
-	const [filteredUsers, setFilteredUsers] = useState([]);
-	const [chatRooms, setChatRooms] = useState([]);
-	const [filteredRooms, setFilteredRooms] = useState([]);
-
-	const [currentChat, setCurrentChat] = useState();
-	const [onlineUsersId, setonlineUsersId] = useState([]);
-	const [searchQuery, setSearchQuery] = useState("");
-
-	const [isContact, setIsContact] = useState(false);
-
-	// Group chat state
-	const [activeTab, setActiveTab] = useState("direct"); // "direct" or "groups"
-	const [allGroups, setAllGroups] = useState([]);
-	const [myGroups, setMyGroups] = useState([]);
-	const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
-	const [chatType, setChatType] = useState("direct"); // Track if current chat is "direct" or "group"
-
-	const socket = useRef();
-
 	const { currentUser } = useAuth();
-
-  useEffect(() => {
-    const getSocket = () => {
-      const res = initiateSocketConnection();
-      socket.current = res;
-      socket.current.emit("addUser", currentUser.username);
-      socket.current.on("getUsers", (users) => {
-        const userId = users.map((u) => u[0]);
-        setonlineUsersId(userId);
-      });
-    };
-
-    getSocket();
-  }, [currentUser.username]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await getChatRooms(currentUser.username);
-      setChatRooms(res);
-    };
-
-    fetchData();
-  }, [currentUser.username]);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			const res = await getAllUsers();
-			SetUsers(res);
-		};
-
-		fetchData();
-	}, []);
-
-	// Fetch all groups and user's groups
-	useEffect(() => {
-		const fetchGroups = async () => {
-			const allGroupsRes = await getAllGroupChatRooms();
-			const myGroupsRes = await getGroupChatRoomsOfUser(currentUser.username);
-			setAllGroups(allGroupsRes || []);
-			setMyGroups(myGroupsRes || []);
-		};
-
-		if (activeTab === "groups") {
-			fetchGroups();
-		}
-	}, [activeTab, currentUser.username]);
-
-	const refreshGroups = async () => {
-		const allGroupsRes = await getAllGroupChatRooms();
-		const myGroupsRes = await getGroupChatRoomsOfUser(currentUser.username);
-		setAllGroups(allGroupsRes || []);
-		setMyGroups(myGroupsRes || []);
-	};
-
-  useEffect(() => {
-    setFilteredUsers(users);
-    setFilteredRooms(chatRooms);
-  }, [users, chatRooms]);
-
-  useEffect(() => {
-    if (isContact) {
-      setFilteredUsers([]);
-    } else {
-      setFilteredRooms([]);
-    }
-  }, [isContact]);
+	const {
+		currentChat,
+		chatType,
+		setSearchQuery,
+		activeTab,
+		setActiveTab,
+		isCreateGroupModalOpen,
+		setIsCreateGroupModalOpen,
+		setCurrentChat,
+		refreshGroups,
+	} = useChat();
 
 	const handleChatChange = (chat) => {
-		setCurrentChat(chat);
-		setChatType("direct");
+		setCurrentChat(chat, "direct");
 	};
 
 	const handleGroupChatChange = (chat) => {
-		setCurrentChat(chat);
-		setChatType("group");
+		setCurrentChat(chat, "group");
 	};
 
 	const handleCreateGroup = async (groupData) => {
@@ -125,38 +41,13 @@ export default function ChatLayout() {
 
 	const handleTabChange = (tab) => {
 		setActiveTab(tab);
-		setCurrentChat(undefined); // Clear current chat when switching tabs
+		setCurrentChat(null, "direct"); // Clear current chat when switching tabs
 		setSearchQuery(""); // Clear search
 	};
 
-  const handleSearch = (newSearchQuery) => {
-    setSearchQuery(newSearchQuery);
-
-    const searchedUsers = users.filter((user) => {
-      return user.username
-        .toLowerCase()
-        .includes(newSearchQuery.toLowerCase());
-    });
-
-    const searchedUsersId = searchedUsers.map((u) => u.username);
-
-    // If there are initial contacts
-    if (chatRooms.length !== 0) {
-      chatRooms.forEach((chatRoom) => {
-        // Check if searched user is a contact or not.
-        const isUserContact = chatRoom.members.some(
-          (e) => e !== currentUser.username && searchedUsersId.includes(e)
-        );
-        setIsContact(isUserContact);
-
-        isUserContact
-          ? setFilteredRooms([chatRoom])
-          : setFilteredUsers(searchedUsers);
-      });
-    } else {
-      setFilteredUsers(searchedUsers);
-    }
-  };
+	const handleSearch = (newSearchQuery) => {
+		setSearchQuery(newSearchQuery);
+	};
 
 	return (
 		<div className="container mx-auto">
@@ -191,40 +82,23 @@ export default function ChatLayout() {
 					{activeTab === "direct" ? (
 						<>
 							<SearchUsers handleSearch={handleSearch} />
-							<AllUsers
-								users={searchQuery !== "" ? filteredUsers : users}
-								chatRooms={searchQuery !== "" ? filteredRooms : chatRooms}
-								setChatRooms={setChatRooms}
-								onlineUsersId={onlineUsersId}
-								currentUser={currentUser}
-								changeChat={handleChatChange}
-							/>
+							<AllUsers changeChat={handleChatChange} />
 						</>
 					) : (
 						<GroupChatList
-							allGroups={allGroups}
-							myGroups={myGroups}
-							currentUser={currentUser}
 							changeChat={handleGroupChatChange}
-							onCreateGroupClick={() => setIsCreateGroupModalOpen(true)}
-							refreshGroups={refreshGroups}
+							onCreateGroupClick={() =>
+								setIsCreateGroupModalOpen(true)
+							}
 						/>
 					)}
 				</div>
 
 				{currentChat ? (
 					chatType === "group" ? (
-						<GroupChatRoom
-							currentChat={currentChat}
-							currentUser={currentUser}
-							socket={socket}
-						/>
+						<GroupChatRoom />
 					) : (
-						<ChatRoom
-							currentChat={currentChat}
-							currentUser={currentUser}
-							socket={socket}
-						/>
+						<ChatRoom />
 					)
 				) : (
 					<Welcome />

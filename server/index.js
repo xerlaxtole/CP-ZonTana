@@ -89,11 +89,10 @@ const getKey = (map, val) => {
 };
 
 io.on("connection", (socket) => {
-	global.chatSocket = socket;
-
 	socket.on("addUser", (userId) => {
 		onlineUsers.set(userId, socket.id);
-		socket.emit("getUsers", Array.from(onlineUsers));
+		console.log("User connected:", userId);
+		io.emit("getUsers", Array.from(onlineUsers.keys()));
 	});
 
 	socket.on(
@@ -151,7 +150,18 @@ io.on("connection", (socket) => {
 	);
 
 	socket.on("disconnect", () => {
-		onlineUsers.delete(getKey(onlineUsers, socket.id));
-		socket.emit("getUsers", Array.from(onlineUsers));
+		const id = getKey(onlineUsers, socket.id);
+		console.log("User disconnected:", id);
+		onlineUsers.delete(id);
+		io.emit("getUsers", Array.from(onlineUsers.keys()));
+	});
+
+	socket.on("refreshChatRooms", async (userId) => {
+		for (let [uid, sockid] of onlineUsers.entries()) {
+			if (uid === userId) continue;
+			if (sockid) {
+				socket.to(sockid).emit("refreshChatRooms", userId);
+			}
+		}
 	});
 });

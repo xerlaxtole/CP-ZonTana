@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { UserGroupIcon } from "@heroicons/react/solid";
 
 import { getGroupMessages, sendGroupMessage } from "../../services/ChatService";
+import { useChat } from "../../contexts/ChatContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 import Message from "./Message";
 import ChatForm from "./ChatForm";
 
-export default function GroupChatRoom({ currentChat, currentUser, socket }) {
+export default function GroupChatRoom() {
+	const { currentUser } = useAuth();
+	const { socket, currentChat } = useChat();
 	const [messages, setMessages] = useState([]);
 	const [incomingMessage, setIncomingMessage] = useState(null);
 
@@ -38,11 +42,10 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 			}
 		};
 
-		const socketInstance = socket.current;
-		socketInstance?.on("getGroupMessage", handleGetGroupMessage);
+		socket?.on("getGroupMessage", handleGetGroupMessage);
 
 		return () => {
-			socketInstance?.off("getGroupMessage", handleGetGroupMessage);
+			socket?.off("getGroupMessage", handleGetGroupMessage);
 		};
 	}, [socket, currentChat._id]);
 
@@ -51,15 +54,15 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 	}, [incomingMessage]);
 
 	const handleFormSubmit = async (message) => {
-		socket.current.emit("sendGroupMessage", {
-			senderId: currentUser.username,
+		socket?.emit("sendGroupMessage", {
+			senderId: currentUser._id,
 			message: message,
 			groupChatRoomId: currentChat._id,
 		});
 
 		const messageBody = {
 			groupChatRoomId: currentChat._id,
-			sender: currentUser.username,
+			sender: currentUser._id,
 			message: message,
 		};
 		const res = await sendGroupMessage(messageBody);
@@ -89,7 +92,8 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 							<p className="text-sm text-gray-500 dark:text-gray-400">
 								{currentChat.members.length} member
 								{currentChat.members.length !== 1 ? "s" : ""}
-								{currentChat.description && ` • ${currentChat.description}`}
+								{currentChat.description &&
+									` • ${currentChat.description}`}
 							</p>
 						</div>
 					</div>
@@ -102,7 +106,7 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 							<div key={index} ref={scrollRef}>
 								<Message
 									message={message}
-									self={currentUser.username}
+									self={currentUser._id}
 									isGroupChat={true}
 								/>
 							</div>

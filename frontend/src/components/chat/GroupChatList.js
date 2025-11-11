@@ -1,19 +1,16 @@
 import { useState, useEffect } from "react";
 import { UserGroupIcon, PlusIcon } from "@heroicons/react/solid";
 import { joinGroupChatRoom } from "../../services/ChatService";
+import { useChat } from "../../contexts/ChatContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 function classNames(...classes) {
 	return classes.filter(Boolean).join(" ");
 }
 
-export default function GroupChatList({
-	allGroups,
-	myGroups,
-	currentUser,
-	changeChat,
-	onCreateGroupClick,
-	refreshGroups,
-}) {
+export default function GroupChatList({ changeChat, onCreateGroupClick }) {
+	const { currentUser } = useAuth();
+	const { allGroups, myGroups, refreshGroups } = useChat();
 	const [selectedChat, setSelectedChat] = useState();
 	const [availableGroups, setAvailableGroups] = useState([]);
 
@@ -33,7 +30,7 @@ export default function GroupChatList({
 
 	const handleJoinGroup = async (group) => {
 		try {
-			await joinGroupChatRoom(group._id, currentUser.username);
+			await joinGroupChatRoom(group._id, currentUser._id);
 			// Refresh groups to update the lists
 			await refreshGroups();
 			// Automatically switch to the newly joined group
@@ -94,7 +91,9 @@ export default function GroupChatList({
 										</div>
 										<p className="text-xs text-gray-500 dark:text-gray-400 truncate">
 											{group.members.length} member
-											{group.members.length !== 1 ? "s" : ""}
+											{group.members.length !== 1
+												? "s"
+												: ""}
 										</p>
 									</div>
 								</div>
@@ -135,7 +134,9 @@ export default function GroupChatList({
 										</div>
 										<p className="text-xs text-gray-500 dark:text-gray-400 truncate">
 											{group.members.length} member
-											{group.members.length !== 1 ? "s" : ""}
+											{group.members.length !== 1
+												? "s"
+												: ""}
 										</p>
 									</div>
 								</div>

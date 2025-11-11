@@ -8,19 +8,19 @@
 ### Installation
 
 1. **Clone the repository**
-   ```bash
+```bash
    git clone https://github.com/xerlaxtole/CP-ZonTana
-   ```
+```
 
 2. **Navigate to frontend directory**
-   ```bash
+```bash
    cd frontend
-   ```
+```
 
 3. **Install dependencies**
-   ```bash
+```bash
    npm i
-   ```
+```
 
 4. **Configure environment variables**
    - Create a `.env` file in the root directory
@@ -28,9 +28,16 @@
    - **Note:** Environment secrets are available in Discord (Pinned in Network-Project channel)
 
 5. **Start the application**
-   ```bash
+   
+   **Local development:**
+```bash
    npm start
-   ```
+```
+   
+   **Production mode:**
+```bash
+   npm run prod
+```
 
 The application should now be running at http://localhost:3000/
 
