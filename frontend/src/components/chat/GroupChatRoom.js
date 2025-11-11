@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { UserGroupIcon } from "@heroicons/react/solid";
 
 import { getGroupMessages, sendGroupMessage } from "../../services/ChatService";
+import { useChat } from "../../contexts/ChatContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 import Message from "./Message";
 import ChatForm from "./ChatForm";
 
-export default function GroupChatRoom({ currentChat, currentUser, socket }) {
+export default function GroupChatRoom() {
+	const { currentUser } = useAuth();
+	const { socket, currentChat } = useChat();
 	const [messages, setMessages] = useState([]);
 	const [incomingMessage, setIncomingMessage] = useState(null);
 
@@ -14,12 +18,12 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const res = await getGroupMessages(currentChat._id);
+			const res = await getGroupMessages(currentChat.id);
 			setMessages(res);
 		};
 
 		fetchData();
-	}, [currentChat._id]);
+	}, [currentChat.id]);
 
 	useEffect(() => {
 		scrollRef.current?.scrollIntoView({
@@ -29,7 +33,7 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 
 	useEffect(() => {
 		const handleGetGroupMessage = (data) => {
-			if (data.groupChatRoomId === currentChat._id) {
+			if (data.groupChatRoomId === currentChat.id) {
 				setIncomingMessage({
 					sender: data.senderId,
 					message: data.message,
@@ -38,28 +42,27 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 			}
 		};
 
-		const socketInstance = socket.current;
-		socketInstance?.on("getGroupMessage", handleGetGroupMessage);
+		socket?.on("getGroupMessage", handleGetGroupMessage);
 
 		return () => {
-			socketInstance?.off("getGroupMessage", handleGetGroupMessage);
+			socket?.off("getGroupMessage", handleGetGroupMessage);
 		};
-	}, [socket, currentChat._id]);
+	}, [socket, currentChat.id]);
 
 	useEffect(() => {
 		incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
 	}, [incomingMessage]);
 
 	const handleFormSubmit = async (message) => {
-		socket.current.emit("sendGroupMessage", {
-			senderId: currentUser.username,
+		socket?.emit("sendGroupMessage", {
+			senderId: currentUser.id,
 			message: message,
-			groupChatRoomId: currentChat._id,
+			groupChatRoomId: currentChat.id,
 		});
 
 		const messageBody = {
-			groupChatRoomId: currentChat._id,
-			sender: currentUser.username,
+			groupChatRoomId: currentChat.id,
+			sender: currentUser.id,
 			message: message,
 		};
 		const res = await sendGroupMessage(messageBody);
@@ -89,7 +92,8 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 							<p className="text-sm text-gray-500 dark:text-gray-400">
 								{currentChat.members.length} member
 								{currentChat.members.length !== 1 ? "s" : ""}
-								{currentChat.description && ` • ${currentChat.description}`}
+								{currentChat.description &&
+									` • ${currentChat.description}`}
 							</p>
 						</div>
 					</div>
@@ -102,7 +106,7 @@ export default function GroupChatRoom({ currentChat, currentUser, socket }) {
 							<div key={index} ref={scrollRef}>
 								<Message
 									message={message}
-									self={currentUser.username}
+									self={currentUser.id}
 									isGroupChat={true}
 								/>
 							</div>

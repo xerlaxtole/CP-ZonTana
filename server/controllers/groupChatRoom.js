@@ -23,7 +23,9 @@ export const createGroupChatRoom = async (req, res) => {
 
 export const getAllGroupChatRooms = async (req, res) => {
 	try {
-		const groupChatRooms = await GroupChatRoom.find().sort({ createdAt: -1 });
+		const groupChatRooms = await GroupChatRoom.find().sort({
+			createdAt: -1,
+		});
 		res.status(200).json(groupChatRooms);
 	} catch (error) {
 		res.status(404).json({

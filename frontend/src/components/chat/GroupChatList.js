@@ -1,27 +1,24 @@
 import { useState, useEffect } from "react";
 import { UserGroupIcon, PlusIcon } from "@heroicons/react/solid";
 import { joinGroupChatRoom } from "../../services/ChatService";
+import { useChat } from "../../contexts/ChatContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 function classNames(...classes) {
 	return classes.filter(Boolean).join(" ");
 }
 
-export default function GroupChatList({
-	allGroups,
-	myGroups,
-	currentUser,
-	changeChat,
-	onCreateGroupClick,
-	refreshGroups,
-}) {
+export default function GroupChatList({ changeChat, onCreateGroupClick }) {
+	const { currentUser } = useAuth();
+	const { allGroups, myGroups, refreshGroups } = useChat();
 	const [selectedChat, setSelectedChat] = useState();
 	const [availableGroups, setAvailableGroups] = useState([]);
 
 	useEffect(() => {
 		// Filter out groups the user is already a member of
-		const myGroupIds = myGroups.map((group) => group._id);
+		const myGroupIds = myGroups.map((group) => group.id);
 		const available = allGroups.filter(
-			(group) => !myGroupIds.includes(group._id)
+			(group) => !myGroupIds.includes(group.id)
 		);
 		setAvailableGroups(available);
 	}, [allGroups, myGroups]);
@@ -33,7 +30,7 @@ export default function GroupChatList({
 
 	const handleJoinGroup = async (group) => {
 		try {
-			await joinGroupChatRoom(group._id, currentUser.username);
+			await joinGroupChatRoom(group.id, currentUser.id);
 			// Refresh groups to update the lists
 			await refreshGroups();
 			// Automatically switch to the newly joined group
@@ -68,7 +65,7 @@ export default function GroupChatList({
 					) : (
 						myGroups.map((group, index) => (
 							<li
-								key={group._id}
+								key={group.id}
 								className={classNames(
 									index === selectedChat
 										? "bg-gray-100 dark:bg-gray-700"
@@ -94,7 +91,9 @@ export default function GroupChatList({
 										</div>
 										<p className="text-xs text-gray-500 dark:text-gray-400 truncate">
 											{group.members.length} member
-											{group.members.length !== 1 ? "s" : ""}
+											{group.members.length !== 1
+												? "s"
+												: ""}
 										</p>
 									</div>
 								</div>
@@ -115,7 +114,7 @@ export default function GroupChatList({
 					) : (
 						availableGroups.map((group) => (
 							<li
-								key={group._id}
+								key={group.id}
 								className="flex items-center justify-between px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700"
 							>
 								<div className="flex items-center gap-3 flex-1 min-w-0">
@@ -135,7 +134,9 @@ export default function GroupChatList({
 										</div>
 										<p className="text-xs text-gray-500 dark:text-gray-400 truncate">
 											{group.members.length} member
-											{group.members.length !== 1 ? "s" : ""}
+											{group.members.length !== 1
+												? "s"
+												: ""}
 										</p>
 									</div>
 								</div>
