@@ -32,42 +32,42 @@ export default function ChatRoom() {
 	}, [messages]);
 
 	useEffect(() => {
-		const handleGetMessage = (data) => {
+		socket?.on("getMessage", (data) => {
 			if (data.chatRoomId === currentChat._id) {
 				setIncomingMessage({
 					sender: data.senderId,
 					message: data.message,
 				});
 			}
-		};
-
-		socket?.on("getMessage", handleGetMessage);
+		});
 
 		return () => {
-			socket?.off("getMessage", handleGetMessage);
+			socket?.off("getMessage");
 		};
 	}, [socket, currentChat._id]);
 
 	useEffect(() => {
-		incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
+		if (incomingMessage) {
+			setMessages((prev) => [...prev, incomingMessage]);
+		}
 	}, [incomingMessage]);
 
 	const handleFormSubmit = async (message) => {
 		const receiverId = currentChat.members.find(
-			(member) => member._id !== currentUser._id
+			(memberId) => memberId !== currentUser._id
 		);
 
 		socket?.emit("sendMessage", {
 			senderId: currentUser._id,
-			receiverId: receiverId.id,
-			message: message,
+			receiverId,
+			message,
 			chatRoomId: currentChat._id,
 		});
 
 		const messageBody = {
 			chatRoomId: currentChat._id,
 			sender: currentUser._id,
-			message: message,
+			message,
 		};
 		const res = await sendMessage(messageBody);
 		setMessages((prev) => [...prev, res]);
