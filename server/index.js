@@ -155,4 +155,13 @@ io.on("connection", (socket) => {
 		onlineUsers.delete(id);
 		io.emit("getUsers", Array.from(onlineUsers.keys()));
 	});
+
+	socket.on("refreshChatRooms", async (userId) => {
+		for (let [uid, sockid] of onlineUsers.entries()) {
+			if (uid === userId) continue;
+			if (sockid) {
+				socket.to(sockid).emit("refreshChatRooms", userId);
+			}
+		}
+	});
 });

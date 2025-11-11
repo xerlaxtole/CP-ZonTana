@@ -5,6 +5,7 @@ import {
 	getChatRooms,
 	getAllGroupChatRooms,
 	getGroupChatRoomsOfUser,
+	getUser,
 } from "../services/ChatService";
 import { socket } from "../socket";
 
@@ -106,9 +107,9 @@ export const ChatProvider = ({ children }) => {
 		});
 
 		// Listen for online users update (mirrors server's global.onlineUsers)
-		socket.on("getUsers", (users) => {
-			console.log("ChatContext: Online users updated:", users);
-			setOnlineUsersIds(users);
+		socket.on("getUsers", async (newlyOnlineUsers) => {
+			// console.log("ChatContext: Online users updated:", newlyOnlineUsers);
+			setOnlineUsersIds(newlyOnlineUsers);
 		});
 
 		// Listen for incoming direct messages
@@ -122,6 +123,17 @@ export const ChatProvider = ({ children }) => {
 			// Message will be handled by GroupChatRoom component
 		});
 
+		socket.on("refreshChatRooms", async (userId) => {
+			console.log(
+				"Receive refreshChatRooms event from: ",
+				userId,
+				" to ",
+				currentUser._id
+			);
+			if (userId === currentUser._id) return;
+			await fetchChatRooms();
+		});
+
 		return () => {
 			socket.off("connect");
 			socket.off("connect_error");
@@ -129,6 +141,7 @@ export const ChatProvider = ({ children }) => {
 			socket.off("getUsers");
 			socket.off("getMessage");
 			socket.off("getGroupMessage");
+			socket.off("refreshChatRooms");
 
 			socket.disconnect();
 			console.log("ChatContext: Socket disconnected on cleanup");
@@ -142,7 +155,7 @@ export const ChatProvider = ({ children }) => {
 			fetchChatRooms();
 			fetchGroups();
 		}
-	}, [currentUser]);
+	}, [currentUser, onlineUsersIds]);
 
 	// Filter users based on search query
 	useEffect(() => {
@@ -162,9 +175,10 @@ export const ChatProvider = ({ children }) => {
 			setFilteredRooms(chatRooms);
 		} else {
 			const filtered = chatRooms.filter((room) => {
-				const otherMember = room.members.find(
-					(m) => m.id !== currentUser._id
+				const otherMemberId = room.members.find(
+					(mId) => mId !== currentUser._id
 				);
+				const otherMember = users.find((u) => u._id === otherMemberId);
 				return otherMember?.username
 					.toLowerCase()
 					.includes(searchQuery.toLowerCase());
@@ -246,6 +260,8 @@ export const ChatProvider = ({ children }) => {
 	// Refresh chat rooms (after sending first message)
 	const refreshChatRooms = async () => {
 		await fetchChatRooms();
+		socket.emit("refreshChatRooms", currentUser._id);
+		console.log("Emitted refreshChatRooms event from: ", currentUser._id);
 	};
 
 	// Check if user is online

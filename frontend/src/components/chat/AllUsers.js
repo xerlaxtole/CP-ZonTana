@@ -22,31 +22,52 @@ export default function AllUsers({ changeChat }) {
 		refreshChatRooms,
 	} = useChat();
 
+	const [displayUsers, setDisplayUsers] = useState([]);
+	const [displayChatRooms, setDisplayChatRooms] = useState([]);
 	const [selectedChat, setSelectedChat] = useState();
 	const [nonContacts, setNonContacts] = useState([]);
 	const [contactIds, setContactIds] = useState([]);
 
 	// Determine which lists to use based on search query
-	const displayUsers = searchQuery !== "" ? filteredUsers : users;
-	const displayChatRooms = searchQuery !== "" ? filteredRooms : chatRooms;
+	useEffect(() => {
+		if (searchQuery !== "") {
+			setDisplayUsers(filteredUsers);
+			setDisplayChatRooms(filteredRooms);
+		} else {
+			setDisplayUsers(users);
+			setDisplayChatRooms(chatRooms);
+		}
+	}, [
+		searchQuery,
+		filteredUsers,
+		filteredRooms,
+		users,
+		onlineUsersId,
+		chatRooms,
+	]);
 
 	useEffect(() => {
 		if (!displayChatRooms) return;
-		const Ids = displayChatRooms.map((chatRoom) => {
-			return chatRoom.members.find((member) => {
-				return member._id !== currentUser._id;
+
+		const ids = displayChatRooms.map((chatRoom) => {
+			return chatRoom.members.find((memberId) => {
+				return memberId !== currentUser._id;
 			});
 		});
-		setContactIds(Ids);
+
+		//console.log("Contact IDs:", ids);
+		setContactIds(ids);
 	}, [displayChatRooms, currentUser._id]);
 
 	useEffect(() => {
 		if (!displayUsers) return;
-		setNonContacts(
-			displayUsers.filter(
-				(f) => f._id !== currentUser._id && !contactIds.includes(f._id)
-			)
+
+		const nonContacts = displayUsers.filter(
+			(f) => f._id !== currentUser._id && !contactIds.includes(f._id)
 		);
+
+		//console.log("Non-contacts:", nonContacts);
+		setNonContacts(nonContacts);
 	}, [contactIds, displayUsers, currentUser._id]);
 
 	const changeCurrentChat = (index, chat) => {
@@ -60,6 +81,7 @@ export default function AllUsers({ changeChat }) {
 			receiverId: user._id,
 		};
 		const res = await createChatRoom(members);
+		console.log("New chat room created:", res);
 
 		// Refresh chat rooms to include the new one
 		await refreshChatRooms();
