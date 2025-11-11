@@ -37,10 +37,11 @@ export default function ChatRoom({ currentChat, currentUser, socket }) {
       }
     };
 
-    socket.current?.on("getMessage", handleGetMessage);
+    const socketInstance = socket.current;
+    socketInstance?.on("getMessage", handleGetMessage);
 
     return () => {
-      socket.current?.off("getMessage", handleGetMessage);
+      socketInstance?.off("getMessage", handleGetMessage);
     };
   }, [socket, currentChat._id]);
 

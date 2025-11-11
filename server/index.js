@@ -22,6 +22,9 @@ import authRoutes from "./routes/auth.js";
 import chatRoomRoutes from "./routes/chatRoom.js";
 import chatMessageRoutes from "./routes/chatMessage.js";
 import userRoutes from "./routes/user.js";
+import groupRoutes from "./routes/group.js";
+import GroupChatRoom from "./models/GroupChatRoom.js";
+import GroupChatMessage from "./models/GroupChatMessage.js";
 
 const app = express();
 
@@ -52,6 +55,7 @@ const PORT = process.env.PORT || 8080;
 app.use("/api/room", chatRoomRoutes);
 app.use("/api/message", chatMessageRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/group", groupRoutes);
 
 const server = app.listen(PORT, () => {
 	console.log(`Server listening on port ${PORT}`);
@@ -102,6 +106,46 @@ io.on("connection", (socket) => {
 					message,
 					chatRoomId,
 				});
+			}
+		}
+	);
+
+	socket.on(
+		"sendGroupMessage",
+		async ({ senderId, message, groupChatRoomId }) => {
+			try {
+				const room = await GroupChatRoom.findById(groupChatRoomId);
+
+				if (!room) {
+					return;
+				}
+
+				// Verify sender is a member
+				if (!room.members.includes(senderId)) {
+					return;
+				}
+
+				// Persist the message to database
+				const newMessage = new GroupChatMessage({
+					groupChatRoomId,
+					sender: senderId,
+					message,
+				});
+				await newMessage.save();
+
+				// Emit to all members (including sender)
+				for (const memberId of room.members) {
+					const sendUserSocket = onlineUsers.get(memberId);
+					if (sendUserSocket) {
+						socket.to(sendUserSocket).emit("getGroupMessage", {
+							senderId,
+							message,
+							groupChatRoomId,
+						});
+					}
+				}
+			} catch (error) {
+				console.error("Error sending group message:", error);
 			}
 		}
 	);
