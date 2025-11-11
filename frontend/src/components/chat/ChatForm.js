@@ -22,8 +22,17 @@ export default function ChatForm(props) {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    props.handleFormSubmit(message);
-    setMessage("");
+    if (message.trim()) {
+      props.handleFormSubmit(message);
+      setMessage("");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleFormSubmit(e);
+    }
   };
 
   return (
@@ -53,6 +62,7 @@ export default function ChatForm(props) {
             required
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <button type="submit">
             <PaperAirplaneIcon
