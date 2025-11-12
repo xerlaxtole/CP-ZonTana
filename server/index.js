@@ -37,8 +37,8 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 
 // Auth routes (no token verification needed)
@@ -89,18 +89,19 @@ io.on('connection', (socket) => {
     io.emit('getUsers', Array.from(onlineUsers.keys()));
   });
 
-  socket.on('sendMessage', ({ senderId, receiverId, message, chatRoomId }) => {
+  socket.on('sendMessage', ({ senderId, receiverId, message, chatRoomId, imageUrl }) => {
     const sendUserSocket = onlineUsers.get(receiverId);
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit('getMessage', {
         senderId,
         message,
         chatRoomId,
+        imageUrl,
       });
     }
   });
 
-  socket.on('sendGroupMessage', async ({ senderId, message, groupChatRoomId }) => {
+  socket.on('sendGroupMessage', async ({ senderId, message, groupChatRoomId, imageUrl }) => {
     try {
       const room = await GroupChatRoom.findById(groupChatRoomId);
 
@@ -118,6 +119,7 @@ io.on('connection', (socket) => {
         groupChatRoomId,
         sender: senderId,
         message,
+        imageUrl,
       });
       await newMessage.save();
 
@@ -129,6 +131,7 @@ io.on('connection', (socket) => {
             senderId,
             message,
             groupChatRoomId,
+            imageUrl,
           });
         }
       }
