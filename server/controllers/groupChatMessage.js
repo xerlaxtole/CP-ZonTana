@@ -38,7 +38,8 @@ export const getGroupMessages = async (req, res) => {
     }
 
     // Get the user from the verified token
-    const userId = req.user.username;
+    const userId = req.user.id;
+    console.log('group user :', userId);
 
     if (!groupChatRoom.members.includes(userId)) {
       return res.status(403).json({ message: 'You are not a member of this group' });

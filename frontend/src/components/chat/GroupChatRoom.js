@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { UserGroupIcon } from '@heroicons/react/solid';
-
-import { getGroupMessages, sendGroupMessage } from '../../services/ChatService';
+import { getGroupMessages, getUser, sendGroupMessage } from '../../services/ChatService';
 import { useChat } from '../../contexts/ChatContext';
 import { useAuth } from '../../contexts/AuthContext';
-
 import Message from './Message';
 import ChatForm from './ChatForm';
 
@@ -12,34 +9,53 @@ export default function GroupChatRoom() {
   const { currentUser } = useAuth();
   const { socket, currentChat } = useChat();
   const [messages, setMessages] = useState([]);
-  const [incomingMessage, setIncomingMessage] = useState(null);
-
+  const [usernames, setUsernames] = useState({}); // Store userId to username mapping
   const scrollRef = useRef();
+  const [avatars, setAvatars] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       const res = await getGroupMessages(currentChat._id);
       setMessages(res);
+
+      // Fetch usernames and avatars for all users in the group chat
+      const userIds = res.map((msg) => msg.sender);
+      const uniqueUserIds = [...new Set(userIds)];
+
+      const fetchedUsernames = {};
+      const fetchedAvatars = {}; // Store avatars in a separate state
+
+      for (const userId of uniqueUserIds) {
+        const user = await getUser(userId); // Get user data including avatar
+        fetchedUsernames[userId] = user.username;
+        fetchedAvatars[userId] = user.avatar; // Store the avatar URL
+        //console.log(`UserId: ${userId}, Avatar: ${user.avatar}`);
+      }
+
+      setUsernames(fetchedUsernames);
+      setAvatars(fetchedAvatars); // Set avatars in state
     };
 
     fetchData();
   }, [currentChat._id]);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({
-      behavior: 'smooth',
-    });
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
     const handleGetGroupMessage = (data) => {
       if (data.groupChatRoomId === currentChat._id) {
-        setIncomingMessage({
+        const newMessage = {
           sender: data.senderId,
           message: data.message,
           groupChatRoomId: data.groupChatRoomId,
           imageUrl: data.imageUrl,
           createdAt: new Date().toISOString(),
+        };
+
+        setMessages((prevMessages) => {
+          return Array.isArray(prevMessages) ? [...prevMessages, newMessage] : [newMessage];
         });
       }
     };
@@ -51,26 +67,28 @@ export default function GroupChatRoom() {
     };
   }, [socket, currentChat._id]);
 
-  useEffect(() => {
-    incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
-  }, [incomingMessage]);
-
   const handleFormSubmit = async (message, imageUrl) => {
-    socket?.emit('sendGroupMessage', {
-      senderId: currentUser._id,
-      message: message,
-      groupChatRoomId: currentChat._id,
-      imageUrl,
-    });
-
     const messageBody = {
       groupChatRoomId: currentChat._id,
       sender: currentUser._id,
-      message: message,
+      message,
       imageUrl,
     };
+
+    // Optimistically update the UI
+    setMessages((prevMessages) => {
+      return Array.isArray(prevMessages) ? [...prevMessages, messageBody] : [messageBody];
+    });
+
+    socket?.emit('sendGroupMessage', messageBody);
+
+    // Persist message to server
     const res = await sendGroupMessage(messageBody);
-    setMessages((prev) => [...prev, res]);
+    if (res) {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => (msg.createdAt === res.createdAt ? res : msg)),
+      );
+    }
   };
 
   return (
@@ -91,7 +109,6 @@ export default function GroupChatRoom() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {currentChat.name}
                 </h3>
-                <UserGroupIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {currentChat.members.length} member
@@ -105,11 +122,20 @@ export default function GroupChatRoom() {
         {/* Messages */}
         <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
           <ul className="space-y-2">
-            {messages.map((message, index) => (
-              <div key={index} ref={scrollRef}>
-                <Message message={message} self={currentUser._id} isGroupChat={true} />
-              </div>
-            ))}
+            {Array.isArray(messages) &&
+              messages.map((message, index) => (
+                <div key={index} ref={scrollRef}>
+                  <Message
+                    message={{
+                      ...message,
+                      senderUsername: usernames[message.sender] || 'Unknown', // Ensure username exists
+                    }}
+                    self={currentUser._id}
+                    isGroupChat={true}
+                    avatars={avatars} // Pass the avatars state to the Message component
+                  />
+                </div>
+              ))}
           </ul>
         </div>
 

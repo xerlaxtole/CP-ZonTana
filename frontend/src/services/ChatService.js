@@ -24,6 +24,7 @@ const createHeader = () => {
     },
     withCredentials: true, // Include cookies in requests
   };
+  //console.log('header ', payloadHeader);
   return payloadHeader;
 };
 
@@ -43,6 +44,7 @@ export const getUser = async (userId) => {
 
   try {
     const res = await axios.get(`${baseURL}/user/${userId}`, header);
+    //console.log('user info', res);
     return res.data;
   } catch (e) {
     console.error(e);
@@ -178,6 +180,7 @@ export const getGroupMessages = async (groupChatRoomId) => {
 
   try {
     const res = await axios.get(`${baseURL}/group/${groupChatRoomId}/messages`, header);
+
     return res.data;
   } catch (e) {
     console.error(e);
