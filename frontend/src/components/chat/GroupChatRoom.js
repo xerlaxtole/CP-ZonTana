@@ -38,6 +38,8 @@ export default function GroupChatRoom() {
           sender: data.senderId,
           message: data.message,
           groupChatRoomId: data.groupChatRoomId,
+          imageUrl: data.imageUrl,
+          createdAt: new Date().toISOString(),
         });
       }
     };
@@ -53,17 +55,19 @@ export default function GroupChatRoom() {
     incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
   }, [incomingMessage]);
 
-  const handleFormSubmit = async (message) => {
+  const handleFormSubmit = async (message, imageUrl) => {
     socket?.emit('sendGroupMessage', {
       senderId: currentUser._id,
       message: message,
       groupChatRoomId: currentChat._id,
+      imageUrl,
     });
 
     const messageBody = {
       groupChatRoomId: currentChat._id,
       sender: currentUser._id,
       message: message,
+      imageUrl,
     };
     const res = await sendGroupMessage(messageBody);
     setMessages((prev) => [...prev, res]);

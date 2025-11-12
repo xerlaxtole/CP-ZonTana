@@ -5,6 +5,10 @@ const GroupChatMessageSchema = mongoose.Schema(
     groupChatRoomId: String,
     sender: String,
     message: String,
+    imageUrl: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true },
 );

@@ -37,6 +37,8 @@ export default function ChatRoom() {
         setIncomingMessage({
           sender: data.senderId,
           message: data.message,
+          imageUrl: data.imageUrl,
+          createdAt: new Date().toISOString(),
         });
       }
     });
@@ -52,7 +54,7 @@ export default function ChatRoom() {
     }
   }, [incomingMessage]);
 
-  const handleFormSubmit = async (message) => {
+  const handleFormSubmit = async (message, imageUrl) => {
     const receiverId = currentChat.members.find((memberId) => memberId !== currentUser._id);
 
     socket?.emit('sendMessage', {
@@ -60,12 +62,14 @@ export default function ChatRoom() {
       receiverId,
       message,
       chatRoomId: currentChat._id,
+      imageUrl,
     });
 
     const messageBody = {
       chatRoomId: currentChat._id,
       sender: currentUser._id,
       message,
+      imageUrl,
     };
     const res = await sendMessage(messageBody);
     setMessages((prev) => [...prev, res]);

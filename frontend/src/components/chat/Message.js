@@ -25,7 +25,14 @@ export default function Message({ message, self, isGroupChat = false }) {
               'relative max-w-xl px-4 py-2 rounded-lg shadow',
             )}
           >
-            <span className="block font-normal ">{message.message}</span>
+            {message.imageUrl && (
+              <img
+                src={message.imageUrl}
+                alt="Uploaded"
+                className="max-w-xs max-h-64 rounded-lg mb-2 object-contain"
+              />
+            )}
+            {message.message && <span className="block font-normal ">{message.message}</span>}
           </div>
           <span className="block text-sm text-gray-700 dark:text-gray-400">
             {format(message.createdAt)}

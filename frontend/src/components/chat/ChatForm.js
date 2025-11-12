@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 
 import { PaperAirplaneIcon } from '@heroicons/react/solid';
-import { EmojiHappyIcon } from '@heroicons/react/outline';
+import { EmojiHappyIcon, PhotographIcon } from '@heroicons/react/outline';
 import Picker from 'emoji-picker-react';
+import imageCompression from 'browser-image-compression';
 
 export default function ChatForm(props) {
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const fileInputRef = useRef();
   const scrollRef = useRef();
 
   useEffect(() => {
@@ -19,12 +22,75 @@ export default function ChatForm(props) {
     setMessage(newMessage);
   };
 
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    // Validate file type (only .jpeg, .jpg, .png)
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      alert('Only .jpeg, .jpg, and .png formats are allowed');
+      e.target.value = null;
+      return;
+    }
+
+    // Validate file size (max 5MB before compression)
+    const maxSizeBeforeCompression = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSizeBeforeCompression) {
+      alert('Image is too large. Maximum size is 5MB');
+      e.target.value = null;
+      return;
+    }
+
+    try {
+      setIsCompressing(true);
+
+      // Compression options
+      const options = {
+        maxSizeMB: 0.7, // 700KB max
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: 'image/jpeg',
+      };
+
+      // Compress the image
+      const compressedFile = await imageCompression(file, options);
+
+      // Convert compressed image to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Image = reader.result;
+        setSelectedImage(base64Image);
+
+        // Auto-send immediately after compression
+        props.handleFormSubmit(message || '', base64Image);
+        setMessage('');
+        setSelectedImage(null);
+        setIsCompressing(false);
+        e.target.value = null;
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error('Image compression failed:', error);
+      alert('Failed to compress image. Please try a different image.');
+      setIsCompressing(false);
+      e.target.value = null;
+    }
+  };
+
+  const handleImageButtonClick = (e) => {
+    e.preventDefault();
+    fileInputRef.current?.click();
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    if (message.trim()) {
-      props.handleFormSubmit(message);
+    if (message.trim() || selectedImage) {
+      props.handleFormSubmit(message, selectedImage);
       setMessage('');
+      setSelectedImage(null);
     }
   };
 
@@ -52,15 +118,30 @@ export default function ChatForm(props) {
             />
           </button>
 
+          <button onClick={handleImageButtonClick} disabled={isCompressing}>
+            <PhotographIcon
+              className={`h-7 w-7 ${isCompressing ? 'text-gray-400' : 'text-blue-600 dark:text-blue-500'}`}
+              aria-hidden="true"
+            />
+          </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept=".jpeg,.jpg,.png"
+            style={{ display: 'none' }}
+          />
+
           <input
             type="text"
-            placeholder="Write a message"
+            placeholder={isCompressing ? 'Compressing image...' : 'Write a message'}
             className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             name="message"
-            required
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
+            disabled={isCompressing}
           />
           <button type="submit">
             <PaperAirplaneIcon
