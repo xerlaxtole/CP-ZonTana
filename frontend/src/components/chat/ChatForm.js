@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 
-import { PaperAirplaneIcon } from "@heroicons/react/solid";
-import { EmojiHappyIcon } from "@heroicons/react/outline";
-import Picker from "emoji-picker-react";
+import { PaperAirplaneIcon } from '@heroicons/react/solid';
+import { EmojiHappyIcon } from '@heroicons/react/outline';
+import Picker from 'emoji-picker-react';
 
 export default function ChatForm(props) {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const scrollRef = useRef();
@@ -24,12 +24,12 @@ export default function ChatForm(props) {
 
     if (message.trim()) {
       props.handleFormSubmit(message);
-      setMessage("");
+      setMessage('');
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleFormSubmit(e);
     }
@@ -37,9 +37,7 @@ export default function ChatForm(props) {
 
   return (
     <div ref={scrollRef}>
-      {showEmojiPicker && (
-        <Picker className="dark:bg-gray-900" onEmojiClick={handleEmojiClick} />
-      )}
+      {showEmojiPicker && <Picker className="dark:bg-gray-900" onEmojiClick={handleEmojiClick} />}
       <form onSubmit={handleFormSubmit}>
         <div className="flex items-center justify-between w-full p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
           <button

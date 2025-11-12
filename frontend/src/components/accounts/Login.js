@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { currentUser, login, error, setError } = useAuth();
 
   useEffect(() => {
     if (currentUser) {
-      navigate("/");
+      navigate('/');
     }
   }, [currentUser, navigate]);
 
@@ -21,12 +21,12 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      setError("");
+      setError('');
       setLoading(true);
       await login(username);
-      navigate("/");
+      navigate('/');
     } catch (e) {
-      setError(e.message || "Failed to login");
+      setError(e.message || 'Failed to login');
     } finally {
       setLoading(false);
     }
@@ -59,16 +59,14 @@ export default function Login() {
               />
             </div>
           </div>
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
           <div>
             <button
               type="submit"
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-sky-800 hover:bg-sky-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Loading..." : "Continue"}
+              {loading ? 'Loading...' : 'Continue'}
             </button>
           </div>
         </form>

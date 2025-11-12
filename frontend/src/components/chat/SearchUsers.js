@@ -1,14 +1,11 @@
-import { SearchIcon } from "@heroicons/react/solid";
+import { SearchIcon } from '@heroicons/react/solid';
 
 export default function SearchUsers({ handleSearch }) {
   return (
     <div className="mx-3 my-3">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-2 flex items-center">
-          <SearchIcon
-            className="h-5 w-5 text-gray-500 dark:text-gray-400"
-            aria-hidden="true"
-          />
+          <SearchIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
         </div>
         <input
           id="search"

@@ -1,10 +1,10 @@
-import { LogoutIcon } from "@heroicons/react/outline";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { LogoutIcon } from '@heroicons/react/outline';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import { useAuth } from "../../contexts/AuthContext";
-import Logout from "../accounts/Logout";
-import ThemeToggler from "./ThemeToggler";
+import { useAuth } from '../../contexts/AuthContext';
+import Logout from '../accounts/Logout';
+import ThemeToggler from './ThemeToggler';
 
 export default function Header() {
   const [modal, setModal] = useState(false);
@@ -36,11 +36,7 @@ export default function Header() {
                   to="/profile"
                   className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-full text-sm p-2.5"
                 >
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={currentUser.avatar}
-                    alt=""
-                  />
+                  <img className="h-8 w-8 rounded-full" src={currentUser.avatar} alt="" />
                 </Link>
               </>
             )}

@@ -1,34 +1,34 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from '../../contexts/AuthContext';
 
 // Import avatars from backend
 const avatars = [
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Princess",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Boots",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Snickers",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Milo",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Oscar",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Bailey",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Midnight",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Smokey",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Shadow",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Lily",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Bella",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucy",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Max",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy",
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Princess',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Boots',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Snickers',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Oscar',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Bailey',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Midnight',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Smokey',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Shadow',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Lily',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Bella',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucy',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Max',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy',
 ];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 export default function Profile() {
@@ -53,16 +53,16 @@ export default function Profile() {
     e.preventDefault();
 
     if (selectedAvatar === undefined) {
-      return setError("Please select an avatar");
+      return setError('Please select an avatar');
     }
 
     try {
-      setError("");
+      setError('');
       setLoading(true);
       await updateAvatar(avatars[selectedAvatar]);
-      navigate("/");
+      navigate('/');
     } catch (e) {
-      setError(e.message || "Failed to update avatar");
+      setError(e.message || 'Failed to update avatar');
     } finally {
       setLoading(false);
     }
@@ -90,9 +90,9 @@ export default function Profile() {
                     alt={`Avatar ${index + 1}`}
                     className={classNames(
                       index === selectedAvatar
-                        ? "border-4 border-blue-700 dark:border-blue-700"
-                        : "cursor-pointer hover:border-4 hover:border-blue-700",
-                      "block object-cover object-center w-24 h-24 rounded-full mx-auto"
+                        ? 'border-4 border-blue-700 dark:border-blue-700'
+                        : 'cursor-pointer hover:border-4 hover:border-blue-700',
+                      'block object-cover object-center w-24 h-24 rounded-full mx-auto',
                     )}
                     src={avatar}
                     onClick={() => setSelectedAvatar(index)}
@@ -102,9 +102,7 @@ export default function Profile() {
             ))}
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
           <div>
             <button
@@ -112,7 +110,7 @@ export default function Profile() {
               disabled={loading}
               className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Updating..." : "Update Avatar"}
+              {loading ? 'Updating...' : 'Update Avatar'}
             </button>
           </div>
         </form>

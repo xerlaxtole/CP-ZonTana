@@ -1,0 +1,30 @@
+{
+  // Enable format on save (Prettier will handle formatting)
+  "editor.formatOnSave": true,
+
+  // Always use Prettier for formatting JS/TS files
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Let ESLint handle code actions like auto-fixing
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.fixAll.eslint": "always"
+  },
+
+  // Use project-local ESLint instead of global
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+
+  // Don’t format with both ESLint and Prettier at once
+  "eslint.format.enable": false
+}
