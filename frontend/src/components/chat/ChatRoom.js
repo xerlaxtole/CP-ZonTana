@@ -1,11 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-
-import { getMessagesOfChatRoom, sendMessage } from '../../services/ChatService';
+import { getMessagesOfChatRoom, sendMessage, getUser } from '../../services/ChatService';
 import { useChat } from '../../contexts/ChatContext';
 import { useAuth } from '../../contexts/AuthContext';
-
 import Message from './Message';
-import Contact from './Contact';
 import ChatForm from './ChatForm';
 
 export default function ChatRoom() {
@@ -13,26 +10,36 @@ export default function ChatRoom() {
   const { socket, currentChat } = useChat();
   const [messages, setMessages] = useState([]);
   const [incomingMessage, setIncomingMessage] = useState(null);
-
+  const [chatPartner, setChatPartner] = useState(null);
   const scrollRef = useRef();
 
+  // 🧠 Fetch messages + chat partner details
   useEffect(() => {
     const fetchData = async () => {
+      if (!currentChat?._id) return;
+
       const res = await getMessagesOfChatRoom(currentChat._id);
-      setMessages(res);
+      setMessages(res || []);
+
+      // Identify and fetch the chat partner
+      const receiverId = currentChat.members.find((id) => id !== currentUser._id);
+      if (receiverId) {
+        const user = await getUser(receiverId);
+        setChatPartner(user);
+      }
     };
 
     fetchData();
-  }, [currentChat._id]);
+  }, [currentChat?._id]);
 
+  // 🪄 Auto-scroll to latest message
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({
-      behavior: 'smooth',
-    });
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // 🛰️ Handle real-time incoming messages
   useEffect(() => {
-    socket?.on('getMessage', (data) => {
+    const handleGetMessage = (data) => {
       if (data.chatRoomId === currentChat._id) {
         setIncomingMessage({
           sender: data.senderId,
@@ -41,21 +48,19 @@ export default function ChatRoom() {
           createdAt: new Date().toISOString(),
         });
       }
-    });
-
-    return () => {
-      socket?.off('getMessage');
     };
+
+    socket?.on('getMessage', handleGetMessage);
+    return () => socket?.off('getMessage', handleGetMessage);
   }, [socket, currentChat._id]);
 
   useEffect(() => {
-    if (incomingMessage) {
-      setMessages((prev) => [...prev, incomingMessage]);
-    }
+    if (incomingMessage) setMessages((prev) => [...prev, incomingMessage]);
   }, [incomingMessage]);
 
+  // ✉️ Send message
   const handleFormSubmit = async (message, imageUrl) => {
-    const receiverId = currentChat.members.find((memberId) => memberId !== currentUser._id);
+    const receiverId = currentChat.members.find((id) => id !== currentUser._id);
 
     socket?.emit('sendMessage', {
       senderId: currentUser._id,
@@ -71,27 +76,57 @@ export default function ChatRoom() {
       message,
       imageUrl,
     };
+
     const res = await sendMessage(messageBody);
-    setMessages((prev) => [...prev, res]);
+    if (res) setMessages((prev) => [...prev, res]);
   };
 
   return (
     <div className="lg:col-span-2 lg:block">
       <div className="w-full">
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-          <Contact chatRoom={currentChat} currentUser={currentUser} />
+        {/* 🩷 Header with profile */}
+        <div className="p-3 bg-pink-50 border-b border-pink-200 dark:bg-pink-900 dark:border-pink-700">
+          {chatPartner && (
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  className="w-12 h-12 rounded-full"
+                  src={chatPartner.avatar || '/default-avatar.png'}
+                  alt={chatPartner.username}
+                />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {chatPartner.username}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Private chat</p>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        {/* 💬 Messages */}
+        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-pink-50 border-b border-pink-200 dark:bg-pink-900 dark:border-pink-700">
           <ul className="space-y-2">
-            {messages.map((message, index) => (
-              <div key={index} ref={scrollRef}>
-                <Message message={message} self={currentUser._id} />
-              </div>
-            ))}
+            {messages
+              .filter((msg) => msg && msg.sender)
+              .map((message, index) => (
+                <div key={index} ref={scrollRef}>
+                  <Message
+                    message={message}
+                    self={currentUser._id}
+                    isGroupChat={false}
+                    avatars={{
+                      [chatPartner?._id]: chatPartner?.avatar,
+                      [currentUser?._id]: currentUser?.avatar,
+                    }}
+                  />
+                </div>
+              ))}
           </ul>
         </div>
 
+        {/* 📝 Chat Input */}
         <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>
     </div>

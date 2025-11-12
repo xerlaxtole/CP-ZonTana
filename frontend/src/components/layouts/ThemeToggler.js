@@ -46,9 +46,10 @@ export default function ThemeToggler() {
     <button
       ref={themeToggleBtn}
       type="button"
-      className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
-      onClick={() => handleThemeToggle()}
+      className="text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 focus:outline-none rounded-lg text-sm p-2.5 transition"
+      onClick={handleThemeToggle}
     >
+      {/* Moon (dark mode icon) */}
       <svg
         ref={themeToggleDarkIcon}
         className="hidden w-8 h-8"
@@ -58,6 +59,7 @@ export default function ThemeToggler() {
       >
         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
       </svg>
+      {/* Sun (light mode icon) */}
       <svg
         ref={themeToggleLightIcon}
         className="hidden w-8 h-8"
