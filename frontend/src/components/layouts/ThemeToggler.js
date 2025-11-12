@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export default function ThemeToggler() {
   const themeToggleBtn = useRef();
@@ -7,37 +7,37 @@ export default function ThemeToggler() {
 
   useEffect(() => {
     if (
-      localStorage.getItem("color-theme") === "dark" ||
-      (!("color-theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
+      localStorage.getItem('color-theme') === 'dark' ||
+      (!('color-theme' in localStorage) &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches)
     ) {
-      document.documentElement.classList.add("dark");
-      themeToggleLightIcon.current.classList.remove("hidden");
+      document.documentElement.classList.add('dark');
+      themeToggleLightIcon.current.classList.remove('hidden');
     } else {
-      document.documentElement.classList.remove("dark");
-      themeToggleDarkIcon.current.classList.remove("hidden");
+      document.documentElement.classList.remove('dark');
+      themeToggleDarkIcon.current.classList.remove('hidden');
     }
   }, []);
 
   const handleThemeToggle = () => {
-    themeToggleDarkIcon.current.classList.toggle("hidden");
-    themeToggleLightIcon.current.classList.toggle("hidden");
+    themeToggleDarkIcon.current.classList.toggle('hidden');
+    themeToggleLightIcon.current.classList.toggle('hidden');
 
-    if (localStorage.getItem("color-theme")) {
-      if (localStorage.getItem("color-theme") === "light") {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("color-theme", "dark");
+    if (localStorage.getItem('color-theme')) {
+      if (localStorage.getItem('color-theme') === 'light') {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('color-theme', 'dark');
       } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("color-theme", "light");
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('color-theme', 'light');
       }
     } else {
-      if (document.documentElement.classList.contains("dark")) {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("color-theme", "light");
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('color-theme', 'light');
       } else {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("color-theme", "dark");
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('color-theme', 'dark');
       }
     }
   };

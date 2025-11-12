@@ -1,11 +1,9 @@
 const generateDiceBearAvataaars = (seed) =>
   `https://avatars.dicebear.com/api/avataaars/${seed}.svg`;
 
-const generateDiceBearBottts = (seed) =>
-  `https://avatars.dicebear.com/api/bottts/${seed}.svg`;
+const generateDiceBearBottts = (seed) => `https://avatars.dicebear.com/api/bottts/${seed}.svg`;
 
-const generateDiceBearGridy = (seed) =>
-  `https://avatars.dicebear.com/api/gridy/${seed}.svg`;
+const generateDiceBearGridy = (seed) => `https://avatars.dicebear.com/api/gridy/${seed}.svg`;
 
 export const generateAvatar = () => {
   const data = [];

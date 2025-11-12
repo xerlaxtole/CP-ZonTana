@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const ChatMessageSchema = mongoose.Schema(
   {
@@ -6,9 +6,9 @@ const ChatMessageSchema = mongoose.Schema(
     sender: String,
     message: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const ChatMessage = mongoose.model("ChatMessage", ChatMessageSchema);
+const ChatMessage = mongoose.model('ChatMessage', ChatMessageSchema);
 
 export default ChatMessage;

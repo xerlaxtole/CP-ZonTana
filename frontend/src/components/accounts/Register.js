@@ -1,21 +1,21 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { currentUser, register, setError } = useAuth();
 
   useEffect(() => {
     if (currentUser) {
-      navigate("/");
+      navigate('/');
     }
   }, [currentUser, navigate]);
 
@@ -23,16 +23,16 @@ export default function Register() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      return setError("Passwords do not match");
+      return setError('Passwords do not match');
     }
 
     try {
-      setError("");
+      setError('');
       setLoading(true);
       await register(email, password);
-      navigate("/profile");
+      navigate('/profile');
     } catch (e) {
-      setError("Failed to register");
+      setError('Failed to register');
     }
 
     setLoading(false);
@@ -96,10 +96,7 @@ export default function Register() {
           </div>
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <Link
-                to="/login"
-                className="text-blue-600 hover:underline dark:text-blue-500"
-              >
+              <Link to="/login" className="text-blue-600 hover:underline dark:text-blue-500">
                 Already have an account? Login
               </Link>
             </div>

@@ -1,9 +1,9 @@
-import { Fragment, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Dialog, Transition } from "@headlessui/react";
-import { ExclamationIcon } from "@heroicons/react/outline";
+import { Fragment, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Dialog, Transition } from '@headlessui/react';
+import { ExclamationIcon } from '@heroicons/react/outline';
 
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Logout({ modal, setModal }) {
   const cancelButtonRef = useRef(null);
@@ -13,12 +13,12 @@ export default function Logout({ modal, setModal }) {
 
   async function handleLogout() {
     try {
-      setError("");
+      setError('');
       await logout();
       setModal(false);
-      navigate("/login");
+      navigate('/login');
     } catch {
-      setError("Failed to logout");
+      setError('Failed to logout');
     }
   }
 
@@ -44,10 +44,7 @@ export default function Logout({ modal, setModal }) {
           </Transition.Child>
 
           {/* This element is to trick the browser into centering the modal contents. */}
-          <span
-            className="hidden sm:inline-block sm:align-middle sm:h-screen"
-            aria-hidden="true"
-          >
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
             &#8203;
           </span>
           <Transition.Child
@@ -63,10 +60,7 @@ export default function Logout({ modal, setModal }) {
               <div className="bg-white dark:bg-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-gray-200 sm:mx-0 sm:h-10 sm:w-10">
-                    <ExclamationIcon
-                      className="h-6 w-6 text-red-600"
-                      aria-hidden="true"
-                    />
+                    <ExclamationIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <Dialog.Title

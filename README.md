@@ -3,21 +3,25 @@
 ## Setup Instructions
 
 ### Prerequisites
+
 - Node.js and npm installed
 
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
    git clone https://github.com/xerlaxtole/CP-ZonTana
 ```
 
 2. **Navigate to frontend directory**
+
 ```bash
    cd frontend
 ```
 
 3. **Install dependencies**
+
 ```bash
    npm i
 ```
@@ -28,13 +32,15 @@
    - **Note:** Environment secrets are available in Discord (Pinned in Network-Project channel)
 
 5. **Start the application**
-   
+
    **Local development:**
+
 ```bash
    npm start
 ```
-   
-   **Production mode:**
+
+**Production mode:**
+
 ```bash
    npm run prod
 ```
