@@ -13,11 +13,11 @@ export default function Header() {
 
   return (
     <>
-      <nav className="px- px-2 sm:px-4 py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-900 text-sm rounded border dark:text-white">
+      <nav className="px- px-2 sm:px-4 py-2.5 bg-gradient-to-r from-primary-blue to-primary-blue border-primary-blue dark:bg-gray-800 dark:border-gray-700 text-white text-sm rounded border shadow-lg dark:text-white">
         <div className="container mx-auto flex flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center">
             <img src="/logo.png" alt="ZonTana Logo" className="h-8 w-8 mr-2" />
-            <span className="self-center text-lg font-semibold whitespace-nowrap text-gray-900 dark:text-white">
+            <span className="self-center text-lg font-semibold whitespace-nowrap text-white dark:text-white">
               ZonTana
             </span>
           </Link>
@@ -27,7 +27,7 @@ export default function Header() {
             {currentUser && (
               <>
                 <button
-                  className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
+                  className="text-white dark:text-gray-400 hover:bg-white/20 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
                   onClick={() => setModal(true)}
                 >
                   <LogoutIcon className="h-8 w-8" aria-hidden="true" />
@@ -35,7 +35,7 @@ export default function Header() {
 
                 <Link
                   to="/profile"
-                  className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-full text-sm p-2.5"
+                  className="text-white dark:text-gray-400 hover:bg-white/20 dark:hover:bg-gray-700 focus:outline-none rounded-full text-sm p-2.5"
                 >
                   <img className="h-8 w-8 rounded-full" src={currentUser.avatar} alt="" />
                 </Link>

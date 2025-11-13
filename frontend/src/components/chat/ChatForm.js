@@ -105,7 +105,7 @@ export default function ChatForm(props) {
     <div ref={scrollRef} className="mb-4">
       {showEmojiPicker && <Picker className="dark:bg-gray-900" onEmojiClick={handleEmojiClick} />}
       <form onSubmit={handleFormSubmit}>
-        <div className="flex items-center justify-between w-auto max-w-4xl mx-auto p-3 bg-bg-grey rounded-full shadow-lg hover:shadow-xl transition-shadow dark:bg-gray-900 dark:border-gray-700">
+        <div className="flex items-center justify-between w-auto max-w-4xl mx-auto p-3 bg-primary-cyan rounded-full shadow-lg hover:shadow-xl transition-shadow dark:bg-gray-900 dark:border-gray-700">
           <button
             onClick={(e) => {
               e.preventDefault();
