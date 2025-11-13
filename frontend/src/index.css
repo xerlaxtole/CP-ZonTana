@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .emoji-picker-react {
-  @apply bg-white dark:bg-gray-800;
+  @apply bg-bg-white dark:bg-gray-800;
 }
 
 .emoji-picker-react .emoji-search {
@@ -28,6 +28,6 @@
 
 @layer base {
   body {
-    @apply bg-white dark:bg-gray-900;
+    @apply bg-bg-white dark:bg-gray-900 text-text-deep;
   }
 }

@@ -20,9 +20,9 @@ export default function Message({ message, self, isGroupChat = false }) {
           <div
             className={classNames(
               isOwn
-                ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                : 'text-gray-700 dark:text-gray-400 bg-white border border-gray-200 shadow-md dark:bg-gray-900 dark:border-gray-700',
-              'relative max-w-xl px-4 py-2 rounded-lg shadow',
+                ? 'bg-gradient-to-r from-dark-blue to-primary-blue text-white shadow-md'
+                : 'bg-gradient-to-r from-primary-cyan to-primary-green text-white shadow-md',
+              'relative max-w-xl px-4 py-2 rounded-2xl',
             )}
           >
             {message.imageUrl && (
@@ -32,11 +32,11 @@ export default function Message({ message, self, isGroupChat = false }) {
                 className="max-w-xs max-h-64 rounded-lg mb-2 object-contain"
               />
             )}
-            {message.message && <span className="block font-normal ">{message.message}</span>}
+            {message.message && <span className="block font-normal">{message.message}</span>}
+            <span className="block text-[10px] text-white/70 mt-1">
+              {format(message.createdAt)}
+            </span>
           </div>
-          <span className="block text-sm text-gray-700 dark:text-gray-400">
-            {format(message.createdAt)}
-          </span>
         </div>
       </li>
     </>
