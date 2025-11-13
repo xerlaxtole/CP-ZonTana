@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { XIcon } from '@heroicons/react/solid';
+import { useChat } from '../../contexts/ChatContext';
 
-const CreateGroupModal = ({ isOpen, onClose, onCreateGroup, currentUser }) => {
+const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
+  const { currentUser } = useChat();
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');

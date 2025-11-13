@@ -1,41 +1,151 @@
 import { useState, useEffect } from 'react';
-import { UserGroupIcon, PlusIcon } from '@heroicons/react/solid';
-import { joinGroupChatRoom } from '../../services/ChatService';
+import { UserGroupIcon, PlusIcon, ChevronDownIcon } from '@heroicons/react/solid';
+import { Disclosure, Transition } from '@headlessui/react';
+import { getAllGroupChatRooms } from '../../services/ChatService';
 import { useChat } from '../../contexts/ChatContext';
-import { useAuth } from '../../contexts/AuthContext';
+import CreateGroupModal from './CreateGroupModal';
+import { socket } from '../../socket';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function GroupChatList({ changeChat, onCreateGroupClick }) {
-  const { currentUser } = useAuth();
-  const { allGroups, myGroups, refreshGroups } = useChat();
-  const [selectedChat, setSelectedChat] = useState();
+function sortGroupMembers(members, isUserOnline) {
+  return [...members].sort((a, b) => {
+    const aOnline = isUserOnline(a);
+    const bOnline = isUserOnline(b);
+    if (aOnline !== bOnline) return bOnline ? 1 : -1;
+    return a.localeCompare(b);
+  });
+}
+
+export default function GroupChatList({ onChangeChat }) {
+  const { currentUser, isUserOnline } = useChat();
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [myGroups, setMyGroups] = useState([]);
   const [availableGroups, setAvailableGroups] = useState([]);
+  const [selectedChatIdx, setSelectedChatIdx] = useState(null);
 
   useEffect(() => {
-    // Filter out groups the user is already a member of
-    const myGroupIds = myGroups.map((group) => group._id);
-    const available = allGroups.filter((group) => !myGroupIds.includes(group._id));
-    setAvailableGroups(available);
-  }, [allGroups, myGroups]);
+    if (!currentUser) return;
 
-  const changeCurrentChat = (index, chat) => {
-    setSelectedChat(index);
-    changeChat(chat);
+    const fetchGroups = async () => {
+      const allGroups = await getAllGroupChatRooms();
+
+      const joinedGroups = allGroups.filter((group) =>
+        group.members.some((memberName) => memberName === currentUser.username),
+      );
+      setMyGroups(joinedGroups);
+
+      const notJoinedGroups = allGroups.filter(
+        (group) => !group.members.some((memberName) => memberName === currentUser.username),
+      );
+      setAvailableGroups(notJoinedGroups);
+    };
+    fetchGroups();
+  }, [currentUser]);
+
+  // Listen for new groups created by other users
+  useEffect(() => {
+    if (!socket || !currentUser) return;
+
+    const handleNewGroup = (newGroup) => {
+      // Avoid duplicates
+      const alreadyExists =
+        myGroups.some((g) => g.name === newGroup.name) ||
+        availableGroups.some((g) => g.name === newGroup.name);
+      if (alreadyExists) return;
+
+      // Add to appropriate list based on membership
+      if (newGroup.members.includes(currentUser.username)) {
+        setMyGroups((prev) => [...prev, newGroup]);
+      } else {
+        setAvailableGroups((prev) => [...prev, newGroup]);
+      }
+    };
+
+    socket.on('newGroupCreated', handleNewGroup);
+    return () => socket.off('newGroupCreated', handleNewGroup);
+  }, [socket, currentUser, myGroups, availableGroups]);
+
+  // Listen for member count updates when users join groups
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMemberUpdate = ({ groupName, members }) => {
+      setMyGroups((prev) => prev.map((g) => (g.name === groupName ? { ...g, members } : g)));
+      setAvailableGroups((prev) => prev.map((g) => (g.name === groupName ? { ...g, members } : g)));
+    };
+
+    socket.on('groupMemberCountUpdated', handleMemberUpdate);
+    return () => socket.off('groupMemberCountUpdated', handleMemberUpdate);
+  }, [socket]);
+
+  const changeCurrentGroupChat = (index, chat) => {
+    setSelectedChatIdx(index);
+    onChangeChat(chat);
+  };
+
+  const handleCreateGroup = async (data) => {
+    const { name, description, createdBy } = data;
+
+    if (!socket) return;
+
+    socket.emit(
+      'createGroup',
+      {
+        name,
+        description,
+        createdBy,
+      },
+      (response) => {
+        if (response.success) {
+          const groupChatRoom = response.group;
+
+          // Update myGroups and availableGroups state
+          setMyGroups((prevGroups) => [...prevGroups, groupChatRoom]);
+          setAvailableGroups((prevGroups) =>
+            prevGroups.filter((group) => group.name !== groupChatRoom.name),
+          );
+
+          // Automatically switch to the newly created group
+          const newGroupIndex = myGroups.length; // It's at the end of the array
+          changeCurrentGroupChat(newGroupIndex, groupChatRoom);
+        } else {
+          console.error('Failed to create group:', response.error);
+          alert('Failed to create group. Please try again.');
+        }
+      },
+    );
   };
 
   const handleJoinGroup = async (group) => {
-    try {
-      await joinGroupChatRoom(group._id, currentUser._id);
-      // Refresh groups to update the lists
-      await refreshGroups();
-      // Automatically switch to the newly joined group
-      changeChat(group);
-    } catch (error) {
-      console.error('Failed to join group:', error);
-    }
+    if (!currentUser || !socket) return;
+    setShowCreateGroupModal(false);
+
+    socket.emit(
+      'joinGroup',
+      {
+        groupName: group.name,
+        username: currentUser.username,
+      },
+      (response) => {
+        if (response.success) {
+          const joinedGroup = response.group;
+
+          // Update myGroups and availableGroups state
+          setMyGroups((prevGroups) => [...prevGroups, joinedGroup]);
+          setAvailableGroups((prevGroups) => prevGroups.filter((g) => g.name !== joinedGroup.name));
+
+          // Automatically switch to the newly joined group
+          const newGroupIndex = myGroups.length; // It's at the end of the array
+          changeCurrentGroupChat(newGroupIndex, joinedGroup);
+        } else {
+          console.error('Failed to join group:', response.error);
+          alert('Failed to join group. Please try again.');
+        }
+      },
+    );
   };
 
   return (
@@ -45,7 +155,7 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
         <div className="flex items-center justify-between my-2 ml-2 mr-2">
           <h2 className="text-gray-900 dark:text-white font-semibold">My Groups</h2>
           <button
-            onClick={onCreateGroupClick}
+            onClick={() => setShowCreateGroupModal(true)}
             className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
             title="Create new group"
           >
@@ -60,33 +170,90 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
             </li>
           ) : (
             myGroups.map((group, index) => (
-              <li
-                key={group._id}
-                className={classNames(
-                  index === selectedChat
-                    ? 'bg-gray-100 dark:bg-gray-700'
-                    : 'transition duration-150 ease-in-out cursor-pointer bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700',
-                  'flex items-center px-3 py-2 text-sm',
-                )}
-                onClick={() => changeCurrentChat(index, group)}
-              >
-                <div className="flex items-center gap-3 w-full">
-                  <div className="relative">
-                    <img className="w-10 h-10 rounded-full" src={group.avatar} alt={group.name} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {group.name}
-                      </p>
-                      <UserGroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {group.members.length} member
-                      {group.members.length !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                </div>
+              <li key={group.name} className="border-b border-gray-200 dark:border-gray-700">
+                {/* Member dropdown */}
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <div
+                        className={classNames(
+                          index === selectedChatIdx
+                            ? 'bg-gray-100 dark:bg-gray-700'
+                            : 'transition duration-150 ease-in-out cursor-pointer bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700',
+                          'flex items-center justify-between px-3 py-2 text-sm',
+                        )}
+                      >
+                        {/* Left side: Group info (clickable) */}
+                        <div
+                          className="flex items-center gap-3 flex-1 min-w-0"
+                          onClick={() => changeCurrentGroupChat(index, group)}
+                        >
+                          <div className="relative">
+                            <img
+                              className="w-10 h-10 rounded-full"
+                              src={group.avatar}
+                              alt={group.name}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {group.name}
+                              </p>
+                              <UserGroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {group.members.length} member
+                              {group.members.length !== 1 ? 's' : ''} • {group.members.filter(member => isUserOnline(member)).length} online
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right side: Dropdown toggle */}
+                        <Disclosure.Button
+                          className="ml-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronDownIcon
+                            className={classNames(
+                              open ? 'rotate-180' : '',
+                              'w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform',
+                            )}
+                          />
+                        </Disclosure.Button>
+                      </div>
+
+                      {/* Member list (below) */}
+                      <Transition
+                        enter="transition duration-100 ease-out"
+                        enterFrom="transform scale-95 opacity-0"
+                        enterTo="transform scale-100 opacity-100"
+                        leave="transition duration-75 ease-out"
+                        leaveFrom="transform scale-100 opacity-100"
+                        leaveTo="transform scale-95 opacity-0"
+                      >
+                        <Disclosure.Panel className="px-3 pb-2 bg-gray-50 dark:bg-gray-800 max-h-[240px] overflow-y-auto scroll-smooth">
+                          {sortGroupMembers(group.members, isUserOnline).map((username) => (
+                            <div
+                              key={username}
+                              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-700 dark:text-gray-300"
+                            >
+                              <div
+                                className={classNames(
+                                  isUserOnline(username)
+                                    ? 'bg-green-500 dark:bg-green-400'
+                                    : 'bg-gray-400',
+                                  'w-2 h-2 rounded-full',
+                                )}
+                              />
+                              <span>{username}</span>
+                            </div>
+                          ))}
+                        </Disclosure.Panel>
+                      </Transition>
+                    </>
+                  )}
+                </Disclosure>
               </li>
             ))
           )}
@@ -103,38 +270,96 @@ export default function GroupChatList({ changeChat, onCreateGroupClick }) {
             </li>
           ) : (
             availableGroups.map((group) => (
-              <li
-                key={group._id}
-                className="flex items-center justify-between px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700"
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="relative">
-                    <img className="w-10 h-10 rounded-full" src={group.avatar} alt={group.name} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {group.name}
-                      </p>
-                      <UserGroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {group.members.length} member
-                      {group.members.length !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleJoinGroup(group)}
-                  className="ml-2 px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex-shrink-0"
-                >
-                  Join
-                </button>
+              <li key={group.name} className="border-b border-gray-200 dark:border-gray-700">
+                {/* Member dropdown */}
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <div className="flex items-center justify-between px-3 py-2 text-sm bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700">
+                        {/* Left side: Group info and join button */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="relative">
+                            <img
+                              className="w-10 h-10 rounded-full"
+                              src={group.avatar}
+                              alt={group.name}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {group.name}
+                              </p>
+                              <UserGroupIcon className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {group.members.length} member
+                              {group.members.length !== 1 ? 's' : ''} • {group.members.filter(member => isUserOnline(member)).length} online
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleJoinGroup(group)}
+                            className="ml-2 px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex-shrink-0"
+                          >
+                            Join
+                          </button>
+                        </div>
+
+                        {/* Right side: Dropdown toggle */}
+                        <Disclosure.Button
+                          className="ml-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronDownIcon
+                            className={classNames(
+                              open ? 'rotate-180' : '',
+                              'w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform',
+                            )}
+                          />
+                        </Disclosure.Button>
+                      </div>
+
+                      {/* Member list (below) */}
+                      <Transition
+                        enter="transition duration-100 ease-out"
+                        enterFrom="transform scale-95 opacity-0"
+                        enterTo="transform scale-100 opacity-100"
+                        leave="transition duration-75 ease-out"
+                        leaveFrom="transform scale-100 opacity-100"
+                        leaveTo="transform scale-95 opacity-0"
+                      >
+                        <Disclosure.Panel className="px-3 pb-2 bg-gray-50 dark:bg-gray-800 max-h-[240px] overflow-y-auto scroll-smooth">
+                          {sortGroupMembers(group.members, isUserOnline).map((username) => (
+                            <div
+                              key={username}
+                              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-700 dark:text-gray-300"
+                            >
+                              <div
+                                className={classNames(
+                                  isUserOnline(username)
+                                    ? 'bg-green-500 dark:bg-green-400'
+                                    : 'bg-gray-400',
+                                  'w-2 h-2 rounded-full',
+                                )}
+                              />
+                              <span>{username}</span>
+                            </div>
+                          ))}
+                        </Disclosure.Panel>
+                      </Transition>
+                    </>
+                  )}
+                </Disclosure>
               </li>
             ))
           )}
         </ul>
       </div>
+      <CreateGroupModal
+        isOpen={showCreateGroupModal}
+        onClose={() => setShowCreateGroupModal(false)}
+        onCreateGroup={handleCreateGroup}
+      />
     </>
   );
 }

@@ -1,21 +1,10 @@
 import axios from 'axios';
-import { io } from 'socket.io-client';
 
 // Use environment variables for API URLs
 const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-const socketURL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:8080';
 
 // Configure axios to include credentials (cookies) with requests
 axios.defaults.withCredentials = true;
-
-export const initiateSocketConnection = () => {
-  const socket = io(socketURL, {
-    withCredentials: true, // Send cookies with Socket.IO connection
-    transports: ['websocket', 'polling'], // Match server configuration
-  });
-
-  return socket;
-};
 
 const createHeader = () => {
   const payloadHeader = {
@@ -35,98 +24,56 @@ export const getAllUsers = async () => {
     return res.data;
   } catch (e) {
     console.error(e);
+    throw e;
   }
 };
 
-export const getUser = async (userId) => {
+export const getUser = async (username) => {
   const header = createHeader();
 
   try {
-    const res = await axios.get(`${baseURL}/user/${userId}`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const getUsers = async (users) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.get(`${baseURL}/user/users`, users, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const getChatRooms = async (userId) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.get(`${baseURL}/room/${userId}`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const getChatRoomOfUsers = async (firstUserId, secondUserId) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.get(`${baseURL}/room/${firstUserId}/${secondUserId}`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const createChatRoom = async (members) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.post(`${baseURL}/room`, members, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const getMessagesOfChatRoom = async (chatRoomId) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.get(`${baseURL}/message/${chatRoomId}`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const sendMessage = async (messageBody) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.post(`${baseURL}/message`, messageBody, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-// Group Chat API functions
-export const createGroupChatRoom = async (groupData) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.post(`${baseURL}/group`, groupData, header);
+    const res = await axios.get(`${baseURL}/user/${username}`, header);
     return res.data;
   } catch (e) {
     console.error(e);
     throw e;
   }
 };
+
+export const getChatRooms = async (username) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(`${baseURL}/room/${username}`, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};
+
+export const getChatRoomOfUsers = async (firstUsername, secondUsername) => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(`${baseURL}/room/${firstUsername}/${secondUsername}`, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};
+
+// Note: The following functions are now handled via socket.io
+// - createChatRoom -> socket.emit('createChatRoom')
+// - getMessagesOfChatRoom -> socket.emit('loadMessages')
+// - sendMessage -> socket.emit('sendDirectMessage')
+// - createGroupChatRoom -> socket.emit('createGroup')
+// - sendGroupMessage -> socket.emit('sendGroupMessage')
+// - joinGroupChatRoom -> socket.emit('joinGroup')
+// - getGroupMessages -> socket.emit('loadGroupMessages')
+
+// Group Chat API functions
 
 export const getAllGroupChatRooms = async () => {
   const header = createHeader();
@@ -136,25 +83,15 @@ export const getAllGroupChatRooms = async () => {
     return res.data;
   } catch (e) {
     console.error(e);
+    throw e;
   }
 };
 
-export const getGroupChatRoomsOfUser = async (userId) => {
+export const getGroupChatRoomsOfUser = async (username) => {
   const header = createHeader();
 
   try {
-    const res = await axios.get(`${baseURL}/group/user/${userId}`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const joinGroupChatRoom = async (groupId, userId) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.post(`${baseURL}/group/${groupId}/join`, { userId }, header);
+    const res = await axios.get(`${baseURL}/group/user/${username}`, header);
     return res.data;
   } catch (e) {
     console.error(e);
@@ -162,33 +99,11 @@ export const joinGroupChatRoom = async (groupId, userId) => {
   }
 };
 
-export const getGroupChatRoomById = async (groupId) => {
+export const getGroupChatRoomById = async (groupName) => {
   const header = createHeader();
 
   try {
-    const res = await axios.get(`${baseURL}/group/${groupId}`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const getGroupMessages = async (groupChatRoomId) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.get(`${baseURL}/group/${groupChatRoomId}/messages`, header);
-    return res.data;
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-export const sendGroupMessage = async (messageBody) => {
-  const header = createHeader();
-
-  try {
-    const res = await axios.post(`${baseURL}/group/message`, messageBody, header);
+    const res = await axios.get(`${baseURL}/group/${groupName}`, header);
     return res.data;
   } catch (e) {
     console.error(e);

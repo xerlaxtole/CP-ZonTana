@@ -2,11 +2,11 @@ import GroupChatMessage from '../models/GroupChatMessage.js';
 import GroupChatRoom from '../models/GroupChatRoom.js';
 
 export const createGroupMessage = async (req, res) => {
-  const { groupChatRoomId, sender, message } = req.body;
+  const { groupName, sender, message } = req.body;
 
   try {
     // Verify that the sender is a member of the group
-    const groupChatRoom = await GroupChatRoom.findById(groupChatRoomId);
+    const groupChatRoom = await GroupChatRoom.findOne({ name: groupName });
 
     if (!groupChatRoom) {
       return res.status(404).json({ message: 'Group not found' });
@@ -27,11 +27,11 @@ export const createGroupMessage = async (req, res) => {
 };
 
 export const getGroupMessages = async (req, res) => {
-  const { groupChatRoomId } = req.params;
+  const { groupName } = req.params;
 
   try {
     // Verify that the requester is a member of the group
-    const groupChatRoom = await GroupChatRoom.findById(groupChatRoomId);
+    const groupChatRoom = await GroupChatRoom.findOne({ name: groupName });
 
     if (!groupChatRoom) {
       return res.status(404).json({ message: 'Group not found' });
@@ -45,7 +45,7 @@ export const getGroupMessages = async (req, res) => {
     }
 
     const messages = await GroupChatMessage.find({
-      groupChatRoomId,
+      groupName,
     }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);

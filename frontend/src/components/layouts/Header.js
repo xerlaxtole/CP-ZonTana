@@ -1,15 +1,14 @@
 import { LogoutIcon } from '@heroicons/react/outline';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-
-import { useAuth } from '../../contexts/AuthContext';
 import Logout from '../accounts/Logout';
 import ThemeToggler from './ThemeToggler';
+import { useChat } from '../../contexts/ChatContext';
 
 export default function Header() {
   const [modal, setModal] = useState(false);
 
-  const { currentUser } = useAuth();
+  const { currentUser } = useChat();
 
   return (
     <>

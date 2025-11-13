@@ -1,121 +1,160 @@
-import { useState, useEffect } from 'react';
-
-import { createChatRoom } from '../../services/ChatService';
+import { useState, useEffect, useCallback } from 'react';
+import { getChatRooms } from '../../services/ChatService';
 import { useChat } from '../../contexts/ChatContext';
-import { useAuth } from '../../contexts/AuthContext';
 import Contact from './Contact';
 import UserLayout from '../layouts/UserLayout';
+import SearchUsers from './SearchUsers';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function AllUsers({ changeChat }) {
-  const { currentUser } = useAuth();
-  const {
-    users,
-    filteredUsers,
-    chatRooms,
-    filteredRooms,
-    onlineUsersId,
-    searchQuery,
-    refreshChatRooms,
-  } = useChat();
+export default function AllUsers({ onChangeChat }) {
+  const { currentUser, socket, allUsers, isUserOnline } = useChat();
+  const [selectedChatIdx, setSelectedChat] = useState(null);
+  const [otherUsers, setOtherUsers] = useState([]);
+  const [myChatRooms, setMyChatRooms] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [displayUsers, setDisplayUsers] = useState([]);
-  const [displayChatRooms, setDisplayChatRooms] = useState([]);
-  const [selectedChat, setSelectedChat] = useState();
-  const [nonContacts, setNonContacts] = useState([]);
-  const [contactIds, setContactIds] = useState([]);
+  const refreshUsersAndChats = useCallback(async () => {
+    if (!currentUser || !socket) return;
 
-  // Determine which lists to use based on search query
-  useEffect(() => {
-    if (searchQuery !== '') {
-      setDisplayUsers(filteredUsers);
-      setDisplayChatRooms(filteredRooms);
-    } else {
-      setDisplayUsers(users);
-      setDisplayChatRooms(chatRooms);
-    }
-  }, [searchQuery, filteredUsers, filteredRooms, users, onlineUsersId, chatRooms]);
+    // Fetch my chat rooms
+    const chatRooms = await getChatRooms(currentUser.username);
+    setMyChatRooms(chatRooms);
 
-  useEffect(() => {
-    if (!displayChatRooms) return;
-
-    const ids = displayChatRooms.map((chatRoom) => {
-      return chatRoom.members.find((memberId) => {
-        return memberId !== currentUser._id;
-      });
+    // Get all usernames from chat room members
+    const usersInChatRooms = new Set();
+    chatRooms.forEach((chatRoom) => {
+      if (chatRoom.members) {
+        chatRoom.members.forEach((member) => {
+          usersInChatRooms.add(member);
+        });
+      }
     });
 
-    //console.log("Contact IDs:", ids);
-    setContactIds(ids);
-  }, [displayChatRooms, currentUser._id]);
-
-  useEffect(() => {
-    if (!displayUsers) return;
-
-    const nonContacts = displayUsers.filter(
-      (f) => f._id !== currentUser._id && !contactIds.includes(f._id),
+    // Filter out current user and users already in chat rooms
+    const filteredUsers = allUsers.filter(
+      (user) => user.username !== currentUser.username && !usersInChatRooms.has(user.username),
     );
 
-    //console.log("Non-contacts:", nonContacts);
-    setNonContacts(nonContacts);
-  }, [contactIds, displayUsers, currentUser._id]);
+    // Apply search filter
+    let usersToSort;
+    if (searchTerm && searchTerm.trim() !== '') {
+      const searchLower = searchTerm.toLowerCase();
+      usersToSort = filteredUsers.filter((user) =>
+        user.username.toLowerCase().includes(searchLower),
+      );
+    } else {
+      usersToSort = filteredUsers;
+    }
 
-  const changeCurrentChat = (index, chat) => {
-    setSelectedChat(index);
-    changeChat(chat);
+    // Sort: online users first, then alphabetically
+    const sortedUsers = usersToSort.sort((a, b) => {
+      const aOnline = isUserOnline(a.username);
+      const bOnline = isUserOnline(b.username);
+
+      // If online status differs, online comes first
+      if (aOnline !== bOnline) return bOnline ? 1 : -1;
+
+      // Same online status, sort alphabetically
+      return a.username.localeCompare(b.username);
+    });
+
+    setOtherUsers(sortedUsers);
+  }, [currentUser, socket, allUsers, searchTerm, isUserOnline]);
+
+  // Initial fetch and refresh on dependencies change
+  useEffect(() => {
+    refreshUsersAndChats();
+  }, [refreshUsersAndChats]);
+
+  useEffect(() => {
+    if (!socket || !currentUser) return;
+
+    // Listen for new chat room events
+    socket.on(`new:${currentUser.username}:chat-room`, refreshUsersAndChats);
+
+    return () => {
+      socket.off(`new:${currentUser.username}:chat-room`);
+    };
+  }, [socket, currentUser, refreshUsersAndChats]);
+
+  const handleNewChatRoom = async (otherUser) => {
+    if (!socket || !currentUser) return;
+
+    socket.emit(
+      'createChatRoom',
+      {
+        senderId: currentUser.username,
+        receiverId: otherUser.username,
+      },
+      (response) => {
+        if (response.success) {
+          const chatRoom = response.chatRoom;
+
+          // Update local state
+          setMyChatRooms((prev) => {
+            // Check if chat room already exists in list
+            const exists = prev.some((room) => room._id === chatRoom._id);
+            if (exists) return prev;
+            return [...prev, chatRoom];
+          });
+
+          // Notify other user
+          socket.emit('notifyChatRoomCreated', {
+            receiverId: otherUser.username,
+          });
+
+          // Select the new chat
+          const chatRoomIndex = myChatRooms.findIndex((room) => room._id === chatRoom._id);
+          const indexToSelect = chatRoomIndex !== -1 ? chatRoomIndex : myChatRooms.length;
+          setSelectedChat(indexToSelect);
+          onChangeChat(chatRoom);
+        } else {
+          console.error('Failed to create chat room:', response.error);
+          alert('Failed to create chat room. Please try again.');
+        }
+      },
+    );
   };
 
-  const handleNewChatRoom = async (user) => {
-    const members = {
-      senderId: currentUser._id,
-      receiverId: user._id,
-    };
-    const res = await createChatRoom(members);
-    console.log('New chat room created:', res);
-
-    // Refresh chat rooms to include the new one
-    await refreshChatRooms();
-
-    changeChat(res);
+  const handleSelectChat = (index) => {
+    setSelectedChat(index);
+    const selectedChatRoom = myChatRooms[index] || null;
+    onChangeChat(selectedChatRoom);
   };
 
   return (
     <>
+      <SearchUsers handleSearch={(searchTerm) => setSearchTerm(searchTerm)} />
       <ul className="overflow-auto h-[30rem]">
         <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white">Chats</h2>
         <li>
-          {displayChatRooms &&
-            displayChatRooms.map((chatRoom, index) => (
-              <div
-                key={index}
-                className={classNames(
-                  index === selectedChat
-                    ? 'bg-gray-100 dark:bg-gray-700'
-                    : 'transition duration-150 ease-in-out cursor-pointer bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700',
-                  'flex items-center px-3 py-2 text-sm ',
-                )}
-                onClick={() => changeCurrentChat(index, chatRoom)}
-              >
-                <Contact
-                  chatRoom={chatRoom}
-                  onlineUsersId={onlineUsersId}
-                  currentUser={currentUser}
-                />
-              </div>
-            ))}
+          {myChatRooms.map((chatRoom, index) => (
+            <div
+              key={index}
+              className={classNames(
+                index === selectedChatIdx
+                  ? 'bg-gray-100 dark:bg-gray-700'
+                  : 'transition duration-150 ease-in-out cursor-pointer bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700',
+                'flex items-center px-3 py-2 text-sm ',
+              )}
+              onClick={() => handleSelectChat(index)}
+            >
+              <Contact chatRoom={chatRoom} />
+            </div>
+          ))}
         </li>
         <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white">Other Users</h2>
         <li>
-          {nonContacts.map((nonContact, index) => (
+          {otherUsers.map((otherUser, index) => (
             <div
               key={index}
               className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer"
-              onClick={() => handleNewChatRoom(nonContact)}
+              onClick={() => handleNewChatRoom(otherUser)}
             >
-              <UserLayout user={nonContact} onlineUsersId={onlineUsersId} />
+              <UserLayout user={otherUser} />
             </div>
           ))}
         </li>

@@ -2,9 +2,12 @@ import mongoose from 'mongoose';
 
 const GroupChatRoomSchema = mongoose.Schema(
   {
+    // a main way to identify group chat rooms
     name: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
     },
     description: {
       type: String,
@@ -14,10 +17,7 @@ const GroupChatRoomSchema = mongoose.Schema(
       type: String,
       default: 'https://api.dicebear.com/7.x/shapes/svg?seed=group',
     },
-    createdBy: {
-      type: String,
-      required: true,
-    },
+    // usernames of the participants in the group chat room
     members: {
       type: Array,
       default: [],

@@ -15,12 +15,12 @@ const router = express.Router();
 // Group chat room routes
 router.post('/', createGroupChatRoom);
 router.get('/all', getAllGroupChatRooms);
-router.get('/user/:userId', getGroupChatRoomsOfUser);
-router.post('/:groupId/join', joinGroupChatRoom);
-router.get('/:groupId', getGroupChatRoomById);
+router.get('/user/:username', getGroupChatRoomsOfUser);
+router.post('/:groupName/join', joinGroupChatRoom);
+router.get('/:groupName', getGroupChatRoomById);
 
 // Group message routes
 router.post('/message', createGroupMessage);
-router.get('/:groupChatRoomId/messages', getGroupMessages);
+router.get('/:groupName/messages', getGroupMessages);
 
 export default router;

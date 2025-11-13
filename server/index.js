@@ -25,6 +25,8 @@ import userRoutes from './routes/user.js';
 import groupRoutes from './routes/group.js';
 import GroupChatRoom from './models/GroupChatRoom.js';
 import GroupChatMessage from './models/GroupChatMessage.js';
+import ChatMessage from './models/ChatMessage.js';
+import ChatRoom from './models/ChatRoom.js';
 
 const app = express();
 
@@ -75,6 +77,7 @@ const io = new Server(server, {
 io.use(VerifySocketToken);
 
 global.onlineUsers = new Map();
+global.io = io;
 
 const getKey = (map, val) => {
   for (let [key, value] of map.entries()) {
@@ -83,70 +86,253 @@ const getKey = (map, val) => {
 };
 
 io.on('connection', (socket) => {
-  socket.on('addUser', (userId) => {
-    onlineUsers.set(userId, socket.id);
-    console.log('User connected:', userId);
-    io.emit('getUsers', Array.from(onlineUsers.keys()));
+  console.log('New socket connection:', socket.id);
+
+  // USER ONLINE STATUS
+  socket.on('addUser', (username) => {
+    onlineUsers.set(username, socket.id);
+    console.log('User connected:', username);
+    io.emit('update:online-usernames', Array.from(onlineUsers.keys()));
   });
 
-  socket.on('sendMessage', ({ senderId, receiverId, message, chatRoomId, imageUrl }) => {
-    const sendUserSocket = onlineUsers.get(receiverId);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit('getMessage', {
-        senderId,
-        message,
-        chatRoomId,
-        imageUrl,
-      });
+  // ROOM MANAGEMENT - Direct Messages
+  socket.on('join-room', async ({ roomId }, callback) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+    if (callback) {
+      callback({ success: true, roomId });
     }
   });
 
-  socket.on('sendGroupMessage', async ({ senderId, message, groupChatRoomId, imageUrl }) => {
+  socket.on('leave-room', ({ roomId }) => {
+    socket.leave(roomId);
+    console.log(`Socket ${socket.id} left room ${roomId}`);
+  });
+
+  // ROOM MANAGEMENT - Group Messages
+  socket.on('join-group', async ({ groupName }) => {
+    socket.join(`grp:${groupName}`);
+    console.log(`Socket ${socket.id} joined group ${groupName}`);
+  });
+
+  socket.on('leave-group', ({ groupName }) => {
+    socket.leave(`grp:${groupName}`);
+    console.log(`Socket ${socket.id} left group ${groupName}`);
+  });
+
+  // CREATE CHAT ROOM
+  socket.on('createChatRoom', async ({ senderId, receiverId }, callback) => {
     try {
-      const room = await GroupChatRoom.findById(groupChatRoomId);
+      // Check if chatroom already exists
+      const existingChatRoom = await ChatRoom.findOne({
+        members: { $all: [senderId, receiverId] },
+      });
 
-      if (!room) {
-        return;
+      if (existingChatRoom) {
+        return callback({ success: true, chatRoom: existingChatRoom });
       }
 
-      // Verify sender is a member
-      if (!room.members.includes(senderId)) {
-        return;
-      }
+      // Create new chatroom
+      const newChatRoom = new ChatRoom({
+        members: [senderId, receiverId],
+      });
+      await newChatRoom.save();
 
-      // Persist the message to database
-      const newMessage = new GroupChatMessage({
-        groupChatRoomId,
-        sender: senderId,
+      callback({ success: true, chatRoom: newChatRoom });
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+      callback({ success: false, error: error.message });
+    }
+  });
+
+  // NOTIFY CHAT ROOM CREATED
+  socket.on('notifyChatRoomCreated', ({ receiverId }) => {
+    const receiverSocket = onlineUsers.get(receiverId);
+    if (receiverSocket) {
+      io.to(receiverSocket).emit(`new:${receiverId}:chat-room`);
+    }
+  });
+
+  // SEND DIRECT MESSAGE
+  socket.on('sendDirectMessage', async ({ chatRoomId, sender, message, imageUrl }, callback) => {
+    try {
+      // Save message to database
+      const newMessage = new ChatMessage({
+        chatRoomId,
+        sender,
         message,
         imageUrl,
       });
       await newMessage.save();
 
-      // Emit to all members (including sender)
-      for (const memberId of room.members) {
-        const sendUserSocket = onlineUsers.get(memberId);
-        if (sendUserSocket) {
-          socket.to(sendUserSocket).emit('getGroupMessage', {
-            senderId,
-            message,
-            groupChatRoomId,
-            imageUrl,
-          });
-        }
-      }
+      // Broadcast to room (including sender)
+      io.to(chatRoomId).emit('receiveDirectMessage', {
+        _id: newMessage._id,
+        chatRoomId: newMessage.chatRoomId,
+        sender: newMessage.sender,
+        message: newMessage.message,
+        imageUrl: newMessage.imageUrl,
+        createdAt: newMessage.createdAt,
+      });
+
+      // Acknowledge to sender
+      callback({ success: true, message: newMessage });
     } catch (error) {
-      console.error('Error sending group message:', error);
+      console.error('Error sending direct message:', error);
+      callback({ success: false, error: error.message });
     }
   });
 
-  socket.on('disconnect', () => {
-    const id = getKey(onlineUsers, socket.id);
-    console.log('User disconnected:', id);
-    onlineUsers.delete(id);
-    io.emit('getUsers', Array.from(onlineUsers.keys()));
+  // LOAD DIRECT MESSAGES
+  socket.on('loadMessages', async ({ chatRoomId }, callback) => {
+    try {
+      const messages = await ChatMessage.find({ chatRoomId }).sort({ createdAt: 1 });
+      callback({ success: true, messages });
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      callback({ success: false, error: error.message });
+    }
   });
 
+  // CREATE GROUP
+  socket.on('createGroup', async ({ name, description, createdBy }, callback) => {
+    try {
+      const newGroupChatRoom = new GroupChatRoom({
+        name,
+        description: description || '',
+        members: [createdBy],
+        avatar: `https://api.dicebear.com/7.x/shapes/svg?seed=${name}`,
+      });
+      await newGroupChatRoom.save();
+
+      // Broadcast to all users except the creator (new group available)
+      socket.broadcast.emit('newGroupCreated', newGroupChatRoom);
+
+      callback({ success: true, group: newGroupChatRoom });
+    } catch (error) {
+      console.error('Error creating group:', error);
+      callback({ success: false, error: error.message });
+    }
+  });
+
+  // JOIN GROUP
+  socket.on('joinGroup', async ({ groupName, username }, callback) => {
+    try {
+      const groupChatRoom = await GroupChatRoom.findOne({ name: groupName });
+      if (!groupChatRoom) {
+        return callback({ success: false, error: 'Group not found' });
+      }
+
+      // Check if already a member
+      if (groupChatRoom.members.includes(username)) {
+        return callback({ success: false, error: 'Already a member' });
+      }
+
+      // Add user to members
+      groupChatRoom.members.push(username);
+      await groupChatRoom.save();
+
+      // Create system message for user joining
+      const systemMessage = new GroupChatMessage({
+        groupName,
+        sender: 'System',
+        message: `${username} joined ${groupName}`,
+        isSystemMessage: true,
+      });
+      await systemMessage.save();
+
+      // Broadcast system message to all group members
+      io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
+        _id: systemMessage._id,
+        groupName: systemMessage.groupName,
+        sender: systemMessage.sender,
+        message: systemMessage.message,
+        imageUrl: systemMessage.imageUrl,
+        isSystemMessage: systemMessage.isSystemMessage,
+        createdAt: systemMessage.createdAt,
+      });
+
+      // Notify all group members about new member
+      io.to(`grp:${groupName}`).emit('userJoinedGroup', {
+        groupName,
+        username,
+        memberCount: groupChatRoom.members.length,
+      });
+
+      // Broadcast to all users for group list updates
+      io.emit('groupMemberCountUpdated', {
+        groupName,
+        memberCount: groupChatRoom.members.length,
+        members: groupChatRoom.members,
+      });
+
+      callback({ success: true, group: groupChatRoom });
+    } catch (error) {
+      console.error('Error joining group:', error);
+      callback({ success: false, error: error.message });
+    }
+  });
+
+  // SEND GROUP MESSAGE
+  socket.on('sendGroupMessage', async ({ groupName, sender, message, imageUrl }, callback) => {
+    try {
+      // Verify sender is a member
+      const room = await GroupChatRoom.findOne({ name: groupName });
+      if (!room) {
+        return callback({ success: false, error: 'Group not found' });
+      }
+
+      if (!room.members.includes(sender)) {
+        return callback({ success: false, error: 'Not a member of this group' });
+      }
+
+      // Save message to database
+      const newMessage = new GroupChatMessage({
+        groupName,
+        sender,
+        message,
+        imageUrl,
+      });
+      await newMessage.save();
+
+      // Broadcast to group room (including sender)
+      io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
+        _id: newMessage._id,
+        groupName: newMessage.groupName,
+        sender: newMessage.sender,
+        message: newMessage.message,
+        imageUrl: newMessage.imageUrl,
+        createdAt: newMessage.createdAt,
+      });
+
+      // Acknowledge to sender
+      callback({ success: true, message: newMessage });
+    } catch (error) {
+      console.error('Error sending group message:', error);
+      callback({ success: false, error: error.message });
+    }
+  });
+
+  // LOAD GROUP MESSAGES
+  socket.on('loadGroupMessages', async ({ groupName }, callback) => {
+    try {
+      const messages = await GroupChatMessage.find({ groupName }).sort({ createdAt: 1 });
+      callback({ success: true, messages });
+    } catch (error) {
+      console.error('Error loading group messages:', error);
+      callback({ success: false, error: error.message });
+    }
+  });
+
+  // DISCONNECT
+  socket.on('disconnect', () => {
+    const username = getKey(onlineUsers, socket.id);
+    console.log('User disconnected:', username);
+    onlineUsers.delete(username);
+    io.emit('update:online-usernames', Array.from(onlineUsers.keys()));
+  });
+
+  // LEGACY: Keep for backward compatibility (can be removed later)
   socket.on('refreshChatRooms', async (userId) => {
     for (let [uid, sockid] of onlineUsers.entries()) {
       if (uid === userId) continue;
