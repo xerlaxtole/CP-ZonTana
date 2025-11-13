@@ -102,10 +102,10 @@ export default function ChatForm(props) {
   };
 
   return (
-    <div ref={scrollRef}>
+    <div ref={scrollRef} className="mb-4">
       {showEmojiPicker && <Picker className="dark:bg-gray-900" onEmojiClick={handleEmojiClick} />}
       <form onSubmit={handleFormSubmit}>
-        <div className="flex items-center justify-between w-full p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="flex items-center justify-between w-auto max-w-4xl mx-auto p-3 bg-bg-grey rounded-full shadow-lg hover:shadow-xl transition-shadow dark:bg-gray-900 dark:border-gray-700">
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -113,14 +113,14 @@ export default function ChatForm(props) {
             }}
           >
             <EmojiHappyIcon
-              className="h-7 w-7 text-blue-600 dark:text-blue-500"
+              className="h-7 w-7 text-text-deep dark:text-blue-500"
               aria-hidden="true"
             />
           </button>
 
           <button onClick={handleImageButtonClick} disabled={isCompressing}>
             <PhotographIcon
-              className={`h-7 w-7 ${isCompressing ? 'text-gray-400' : 'text-blue-600 dark:text-blue-500'}`}
+              className={`h-7 w-7 ${isCompressing ? 'text-gray-400' : 'text-text-deep dark:text-blue-500'}`}
               aria-hidden="true"
             />
           </button>
@@ -136,7 +136,7 @@ export default function ChatForm(props) {
           <input
             type="text"
             placeholder={isCompressing ? 'Compressing image...' : 'Write a message'}
-            className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="block w-full py-2 pl-4 mx-3 outline-none bg-bg-white border-none text-text-deep text-sm rounded-full focus:ring-2 focus:ring-primary-blue placeholder:text-text-deep/50 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500"
             name="message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -145,7 +145,7 @@ export default function ChatForm(props) {
           />
           <button type="submit">
             <PaperAirplaneIcon
-              className="h-6 w-6 text-blue-600 dark:text-blue-500 rotate-[90deg]"
+              className="h-6 w-6 text-text-deep dark:text-blue-500 rotate-[90deg]"
               aria-hidden="true"
             />
           </button>

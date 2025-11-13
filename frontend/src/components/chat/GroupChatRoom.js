@@ -103,7 +103,7 @@ export default function GroupChatRoom() {
         </div>
 
         {/* Messages */}
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white dark:bg-gray-900">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>

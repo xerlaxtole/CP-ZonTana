@@ -20,8 +20,8 @@ export default function Message({ message, self, isGroupChat = false }) {
           <div
             className={classNames(
               isOwn
-                ? 'bg-gradient-to-r from-dark-blue to-primary-blue text-white shadow-md'
-                : 'bg-gradient-to-r from-primary-cyan to-primary-green text-white shadow-md',
+                ? 'bg-gradient-to-r from-dark-blue to-primary-blue text-white shadow-xl'
+                : 'bg-gradient-to-r from-primary-cyan to-primary-green text-white shadow-xl',
               'relative max-w-xl px-4 py-2 rounded-2xl',
             )}
           >
