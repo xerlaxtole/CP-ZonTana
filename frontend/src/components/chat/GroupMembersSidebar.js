@@ -36,7 +36,7 @@ export default function GroupMembersSidebar({ isOpen, onClose, members, allUsers
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-pink-500 bg-opacity-75 dark:bg-pink-900 dark:bg-opacity-75 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
@@ -52,9 +52,9 @@ export default function GroupMembersSidebar({ isOpen, onClose, members, allUsers
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white dark:bg-gray-900 shadow-xl">
+                  <div className="flex h-full flex-col overflow-y-scroll bg-white dark:bg-pink-900 shadow-xl">
                     {/* Header */}
-                    <div className="bg-blue-600 dark:bg-blue-700 px-4 py-6 sm:px-6">
+                    <div className="bg-pink-600 dark:bg-pink-700 px-4 py-6 sm:px-6">
                       <div className="flex items-center justify-between">
                         <Dialog.Title className="text-lg font-medium text-white">
                           Group Members ({members?.length || 0})
@@ -62,7 +62,7 @@ export default function GroupMembersSidebar({ isOpen, onClose, members, allUsers
                         <div className="ml-3 flex h-7 items-center">
                           <button
                             type="button"
-                            className="rounded-md bg-blue-600 dark:bg-blue-700 text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white"
+                            className="rounded-md bg-pink-600 dark:bg-pink-700 text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white"
                             onClick={onClose}
                           >
                             <span className="sr-only">Close panel</span>
@@ -82,7 +82,7 @@ export default function GroupMembersSidebar({ isOpen, onClose, members, allUsers
                           return (
                             <div
                               key={username}
-                              className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                              className="flex items-center gap-3 p-3 rounded-lg bg-pink-50 dark:bg-pink-800 hover:bg-pink-100 dark:hover:bg-pink-700 transition"
                             >
                               <div className="relative flex-shrink-0">
                                 <img

@@ -113,7 +113,7 @@ export default function ChatForm(props) {
             }}
           >
             <EmojiHappyIcon
-              className="h-7 w-7 text-blue-600 dark:text-blue-500"
+              className="h-7 w-7 text-pink-600 dark:text-pink-400"
               aria-hidden="true"
             />
           </button>
@@ -121,7 +121,7 @@ export default function ChatForm(props) {
           <button onClick={handleImageButtonClick} disabled={isCompressing}>
             <PhotographIcon
               className={`h-7 w-7 ${
-                isCompressing ? 'text-gray-400' : 'text-blue-600 dark:text-blue-500'
+                isCompressing ? 'text-gray-400' : 'text-pink-600 dark:text-pink-400'
               }`}
               aria-hidden="true"
             />
@@ -138,7 +138,7 @@ export default function ChatForm(props) {
           <input
             type="text"
             placeholder={isCompressing ? 'Compressing image...' : 'Write a message'}
-            className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-pink-500 focus:border-pink-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-pink-500 dark:focus:border-pink-500"
             name="message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -147,7 +147,7 @@ export default function ChatForm(props) {
           />
           <button type="submit">
             <PaperAirplaneIcon
-              className="h-6 w-6 text-blue-600 dark:text-blue-500 rotate-[90deg]"
+              className="h-6 w-6 text-pink-600 dark:text-pink-400 rotate-[90deg]"
               aria-hidden="true"
             />
           </button>

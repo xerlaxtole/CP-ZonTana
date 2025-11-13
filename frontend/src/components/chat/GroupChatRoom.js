@@ -135,7 +135,7 @@ export default function GroupChatRoom({ chatRoom }) {
     <div className="lg:col-span-2 lg:block">
       <div className="w-full">
         {/* Group Header */}
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="p-3 bg-pink-50 border-b border-pink-200 dark:bg-pink-900 dark:border-pink-700">
           <div className="flex items-center gap-3">
             <div className="relative">
               <img className="w-12 h-12 rounded-full" src={chatRoom.avatar} alt={chatRoom.name} />
@@ -149,14 +149,15 @@ export default function GroupChatRoom({ chatRoom }) {
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {memberCount} member
-                {memberCount !== 1 ? 's' : ''} • {chatRoom.members?.filter(member => isUserOnline(member)).length || 0} online
+                {memberCount !== 1 ? 's' : ''} •{' '}
+                {chatRoom.members?.filter((member) => isUserOnline(member)).length || 0} online
                 {chatRoom.description && ` • ${chatRoom.description}`}
               </p>
             </div>
             {/* Members sidebar button */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 transition"
               title="View members"
             >
               <UsersIcon className="w-5 h-5" />
@@ -166,7 +167,7 @@ export default function GroupChatRoom({ chatRoom }) {
         </div>
 
         {/* Messages */}
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-pink-200 dark:bg-gray-700 dark:border-pink-700">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>

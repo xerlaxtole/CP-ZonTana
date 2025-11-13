@@ -124,11 +124,11 @@ export default function ChatRoom({ chatRoom }) {
   return (
     <div className="lg:col-span-2 lg:block">
       <div className="w-full">
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="p-3 bg-pink-50 border-b border-pink-700 dark:bg-pink-800 dark:border-pink-900">
           <Contact chatRoom={chatRoom} />
         </div>
 
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-pink-200 dark:bg-gray-700 dark:border-pink-600">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>

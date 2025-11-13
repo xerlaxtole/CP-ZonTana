@@ -153,10 +153,10 @@ export default function GroupChatList({ onChangeChat }) {
       <div className="overflow-auto h-[30rem]">
         {/* My Groups Section */}
         <div className="flex items-center justify-between my-2 ml-2 mr-2">
-          <h2 className="text-gray-900 dark:text-white font-semibold">My Groups</h2>
+          <h2 className="text-x1 font-semibold text-pink-700 dark:text-white mb-2">My Groups</h2>
           <button
             onClick={() => setShowCreateGroupModal(true)}
-            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition"
             title="Create new group"
           >
             <PlusIcon className="w-4 h-4" />
@@ -170,19 +170,12 @@ export default function GroupChatList({ onChangeChat }) {
             </li>
           ) : (
             myGroups.map((group, index) => (
-              <li key={group.name} className="border-b border-gray-200 dark:border-gray-700">
+              <li key={group.name} className="border-b border-pink-200 dark:border-pink-700">
                 {/* Member dropdown */}
                 <Disclosure>
                   {({ open }) => (
                     <>
-                      <div
-                        className={classNames(
-                          index === selectedChatIdx
-                            ? 'bg-gray-100 dark:bg-gray-700'
-                            : 'transition duration-150 ease-in-out cursor-pointer bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700',
-                          'flex items-center justify-between px-3 py-2 text-sm',
-                        )}
-                      >
+                      <div className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-pink-100 dark:bg-gray-700 dark:border-gray-700 dark:hover:bg-pink-700 cursor-pointer">
                         {/* Left side: Group info (clickable) */}
                         <div
                           className="flex items-center gap-3 flex-1 min-w-0"
@@ -204,14 +197,15 @@ export default function GroupChatList({ onChangeChat }) {
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                               {group.members.length} member
-                              {group.members.length !== 1 ? 's' : ''} • {group.members.filter(member => isUserOnline(member)).length} online
+                              {group.members.length !== 1 ? 's' : ''} •{' '}
+                              {group.members.filter((member) => isUserOnline(member)).length} online
                             </p>
                           </div>
                         </div>
 
                         {/* Right side: Dropdown toggle */}
                         <Disclosure.Button
-                          className="ml-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                          className="ml-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-pink-600 transition"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ChevronDownIcon
@@ -232,7 +226,7 @@ export default function GroupChatList({ onChangeChat }) {
                         leaveFrom="transform scale-100 opacity-100"
                         leaveTo="transform scale-95 opacity-0"
                       >
-                        <Disclosure.Panel className="px-3 pb-2 bg-gray-50 dark:bg-gray-800 max-h-[240px] overflow-y-auto scroll-smooth">
+                        <Disclosure.Panel className="px-3 pb-2 bg-pink-50 dark:bg-pink-800 max-h-[240px] overflow-y-auto scroll-smooth">
                           {sortGroupMembers(group.members, isUserOnline).map((username) => (
                             <div
                               key={username}
@@ -260,7 +254,7 @@ export default function GroupChatList({ onChangeChat }) {
         </ul>
 
         {/* Available Groups Section */}
-        <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white font-semibold">
+        <h2 className="my-2 mb-2 ml-2 text-x1 font-semibold text-pink-700 dark:text-white">
           Available Groups
         </h2>
         <ul>
@@ -270,12 +264,12 @@ export default function GroupChatList({ onChangeChat }) {
             </li>
           ) : (
             availableGroups.map((group) => (
-              <li key={group.name} className="border-b border-gray-200 dark:border-gray-700">
+              <li key={group.name} className="border-b border-pink-200 dark:border-pink-700">
                 {/* Member dropdown */}
                 <Disclosure>
                   {({ open }) => (
                     <>
-                      <div className="flex items-center justify-between px-3 py-2 text-sm bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700">
+                      <div className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-pink-100 dark:bg-gray-700 dark:border-gray-700 dark:hover:bg-pink-700 cursor-pointer">
                         {/* Left side: Group info and join button */}
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="relative">
@@ -294,12 +288,13 @@ export default function GroupChatList({ onChangeChat }) {
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                               {group.members.length} member
-                              {group.members.length !== 1 ? 's' : ''} • {group.members.filter(member => isUserOnline(member)).length} online
+                              {group.members.length !== 1 ? 's' : ''} •{' '}
+                              {group.members.filter((member) => isUserOnline(member)).length} online
                             </p>
                           </div>
                           <button
                             onClick={() => handleJoinGroup(group)}
-                            className="ml-2 px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex-shrink-0"
+                            className="ml-2 px-3 py-1 text-xs bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition flex-shrink-0"
                           >
                             Join
                           </button>
@@ -307,7 +302,7 @@ export default function GroupChatList({ onChangeChat }) {
 
                         {/* Right side: Dropdown toggle */}
                         <Disclosure.Button
-                          className="ml-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                          className="ml-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-pink-600 transition"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ChevronDownIcon
@@ -328,7 +323,7 @@ export default function GroupChatList({ onChangeChat }) {
                         leaveFrom="transform scale-100 opacity-100"
                         leaveTo="transform scale-95 opacity-0"
                       >
-                        <Disclosure.Panel className="px-3 pb-2 bg-gray-50 dark:bg-gray-800 max-h-[240px] overflow-y-auto scroll-smooth">
+                        <Disclosure.Panel className="px-3 pb-2 bg-pink-50 dark:bg-pink-800 max-h-[240px] overflow-y-auto scroll-smooth">
                           {sortGroupMembers(group.members, isUserOnline).map((username) => (
                             <div
                               key={username}
