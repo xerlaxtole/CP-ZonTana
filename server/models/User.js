@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const UserSchema = mongoose.Schema(
   {
+    // a main way to identify users
     username: {
       type: String,
       required: true,
@@ -12,6 +13,11 @@ const UserSchema = mongoose.Schema(
     avatar: {
       type: String,
       default: '',
+    },
+    // list of group names the user is part of
+    groups: {
+      type: Array,
+      default: [],
     },
   },
   { timestamps: true },

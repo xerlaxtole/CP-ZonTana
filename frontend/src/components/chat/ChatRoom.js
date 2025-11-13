@@ -1,92 +1,138 @@
-import { useState, useEffect, useRef } from 'react';
-
-import { getMessagesOfChatRoom, sendMessage } from '../../services/ChatService';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../contexts/ChatContext';
-import { useAuth } from '../../contexts/AuthContext';
-
 import Message from './Message';
 import Contact from './Contact';
 import ChatForm from './ChatForm';
 
-export default function ChatRoom() {
-  const { currentUser } = useAuth();
-  const { socket, currentChat } = useChat();
+export default function ChatRoom({ chatRoom }) {
+  const { currentUser, socket, isSocketConnected } = useChat();
   const [messages, setMessages] = useState([]);
-  const [incomingMessage, setIncomingMessage] = useState(null);
+  const [incomingMessages, setIncomingMessages] = useState([]);
+  const [isRoomJoined, setIsRoomJoined] = useState(false);
 
   const scrollRef = useRef();
 
+  // Join/leave socket room and load messages when chatRoom changes
   useEffect(() => {
-    const fetchData = async () => {
-      const res = await getMessagesOfChatRoom(currentChat._id);
-      setMessages(res);
+    if (!socket || !chatRoom || !isSocketConnected) return;
+
+    // Clear previous messages when switching rooms
+    setMessages([]);
+    setIncomingMessages([]);
+
+    // Join the chat room
+    socket.emit('join-room', { roomId: chatRoom._id }, (response) => {
+      if (response && response.success) {
+        console.log('Successfully joined room:', response.roomId);
+        setIsRoomJoined(true);
+      } else {
+        console.error('Failed to join room');
+        setIsRoomJoined(false);
+      }
+    });
+
+    // Load messages via socket
+    socket.emit('loadMessages', { chatRoomId: chatRoom._id }, (response) => {
+      if (response.success) {
+        setMessages(response.messages);
+      } else {
+        console.error('Failed to load messages:', response.error);
+      }
+    });
+
+    // Leave room on cleanup
+    return () => {
+      socket.emit('leave-room', { roomId: chatRoom._id });
+      setIsRoomJoined(false);
     };
+  }, [socket, chatRoom, isSocketConnected]);
 
-    fetchData();
-  }, [currentChat._id]);
-
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollRef.current?.scrollIntoView({
       behavior: 'smooth',
     });
   }, [messages]);
 
+  // Handle incoming messages via socket
   useEffect(() => {
-    socket?.on('getMessage', (data) => {
-      if (data.chatRoomId === currentChat._id) {
-        setIncomingMessage({
-          sender: data.senderId,
-          message: data.message,
-          imageUrl: data.imageUrl,
-          createdAt: new Date().toISOString(),
-        });
+    if (!socket || !chatRoom) return;
+
+    const handleReceiveMessage = (data) => {
+      console.log('Received message via socket:', data);
+      const { chatRoomId, sender, message, imageUrl, _id, createdAt } = data;
+
+      // Only add if it's for this chat room
+      if (chatRoomId !== chatRoom._id) {
+        console.log('Message not for this room. Expected:', chatRoom._id, 'Got:', chatRoomId);
+        return;
       }
-    });
+
+      const incomingMessage = {
+        _id,
+        sender,
+        message,
+        imageUrl,
+        createdAt,
+      };
+      console.log('Adding message to state:', incomingMessage);
+      setIncomingMessages((prev) => [...prev, incomingMessage]);
+    };
+
+    socket.on('receiveDirectMessage', handleReceiveMessage);
 
     return () => {
-      socket?.off('getMessage');
+      socket.off('receiveDirectMessage', handleReceiveMessage);
     };
-  }, [socket, currentChat._id]);
+  }, [socket, chatRoom]);
 
+  // Append incoming messages to the message list
   useEffect(() => {
-    if (incomingMessage) {
-      setMessages((prev) => [...prev, incomingMessage]);
+    if (incomingMessages.length > 0) {
+      setMessages((prev) => [...prev, ...incomingMessages]);
+      setIncomingMessages([]);
     }
-  }, [incomingMessage]);
+  }, [incomingMessages]);
 
-  const handleFormSubmit = async (message, imageUrl) => {
-    const receiverId = currentChat.members.find((memberId) => memberId !== currentUser._id);
+  // Handle form submission to send a new message
+  const handleFormSubmit = useCallback(
+    async (message, imageUrl) => {
+      if (!socket || !currentUser || !chatRoom) return;
 
-    socket?.emit('sendMessage', {
-      senderId: currentUser._id,
-      receiverId,
-      message,
-      chatRoomId: currentChat._id,
-      imageUrl,
-    });
-
-    const messageBody = {
-      chatRoomId: currentChat._id,
-      sender: currentUser._id,
-      message,
-      imageUrl,
-    };
-    const res = await sendMessage(messageBody);
-    setMessages((prev) => [...prev, res]);
-  };
+      socket.emit(
+        'sendDirectMessage',
+        {
+          chatRoomId: chatRoom._id,
+          sender: currentUser.username,
+          message,
+          imageUrl,
+        },
+        (response) => {
+          if (response.success) {
+            // Message saved and will be received via 'receiveDirectMessage' listener
+            // No need to update state here as the socket listener will handle it
+          } else {
+            console.error('Failed to send message:', response.error);
+            alert('Failed to send message. Please try again.');
+          }
+        },
+      );
+    },
+    [socket, currentUser, chatRoom],
+  );
 
   return (
     <div className="lg:col-span-2 lg:block">
       <div className="w-full">
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-          <Contact chatRoom={currentChat} currentUser={currentUser} />
+        <div className="p-3 bg-pink-50 border-b border-pink-700 dark:bg-pink-800 dark:border-pink-900">
+          <Contact chatRoom={chatRoom} />
         </div>
 
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white dark:bg-gray-900">
+        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-pink-200 dark:bg-gray-700 dark:border-pink-600">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>
-                <Message message={message} self={currentUser._id} />
+                <Message message={message} />
               </div>
             ))}
           </ul>

@@ -2,8 +2,11 @@ import mongoose from 'mongoose';
 
 const ChatMessageSchema = mongoose.Schema(
   {
+    // value is ChatRoom._id (mongo ObjectId as string)
     chatRoomId: String,
+    // sender is username
     sender: String,
+    // message content
     message: String,
     imageUrl: {
       type: String,

@@ -1,29 +1,52 @@
 import { useState, useEffect, useRef } from 'react';
-import { UserGroupIcon } from '@heroicons/react/solid';
+import { UserGroupIcon, UsersIcon } from '@heroicons/react/solid';
 
-import { getGroupMessages, sendGroupMessage } from '../../services/ChatService';
 import { useChat } from '../../contexts/ChatContext';
-import { useAuth } from '../../contexts/AuthContext';
 
 import Message from './Message';
 import ChatForm from './ChatForm';
+import GroupMembersSidebar from './GroupMembersSidebar';
 
-export default function GroupChatRoom() {
-  const { currentUser } = useAuth();
-  const { socket, currentChat } = useChat();
+export default function GroupChatRoom({ chatRoom }) {
+  const { currentUser, socket, allUsers, isUserOnline, isSocketConnected } = useChat();
   const [messages, setMessages] = useState([]);
-  const [incomingMessage, setIncomingMessage] = useState(null);
+  const [incomingMessages, setIncomingMessages] = useState([]);
+  const [memberCount, setMemberCount] = useState(chatRoom?.members?.length || 0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const scrollRef = useRef();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await getGroupMessages(currentChat._id);
-      setMessages(res);
-    };
+  // Helper function to get user avatar by username
+  const getUserAvatar = (username) => {
+    const user = allUsers?.find((u) => u.username === username);
+    return user?.avatar || '';
+  };
 
-    fetchData();
-  }, [currentChat._id]);
+  // Join/leave socket group and load messages when chatRoom changes
+  useEffect(() => {
+    if (!socket || !chatRoom || !isSocketConnected) return;
+
+    // Clear previous messages when switching groups
+    setMessages([]);
+    setIncomingMessages([]);
+
+    // Join the group
+    socket.emit('join-group', { groupName: chatRoom.name });
+
+    // Load messages via socket
+    socket.emit('loadGroupMessages', { groupName: chatRoom.name }, (response) => {
+      if (response.success) {
+        setMessages(response.messages);
+      } else {
+        console.error('Failed to load group messages:', response.error);
+      }
+    });
+
+    // Leave group on cleanup
+    return () => {
+      socket.emit('leave-group', { groupName: chatRoom.name });
+    };
+  }, [socket, chatRoom, isSocketConnected]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({
@@ -32,82 +55,127 @@ export default function GroupChatRoom() {
   }, [messages]);
 
   useEffect(() => {
-    const handleGetGroupMessage = (data) => {
-      if (data.groupChatRoomId === currentChat._id) {
-        setIncomingMessage({
-          sender: data.senderId,
-          message: data.message,
-          groupChatRoomId: data.groupChatRoomId,
-          imageUrl: data.imageUrl,
-          createdAt: new Date().toISOString(),
-        });
+    if (!socket || !chatRoom) return;
+
+    const handleReceiveMessage = (data) => {
+      const { groupName, sender, message, imageUrl, _id, createdAt, isSystemMessage } = data;
+
+      // Only add if it's for this group
+      if (groupName !== chatRoom.name) return;
+
+      const incomingMessage = {
+        _id,
+        sender,
+        message,
+        imageUrl,
+        createdAt,
+        isSystemMessage,
+      };
+      setIncomingMessages((prev) => [...prev, incomingMessage]);
+    };
+
+    socket.on('receiveGroupMessage', handleReceiveMessage);
+
+    return () => {
+      socket.off('receiveGroupMessage', handleReceiveMessage);
+    };
+  }, [socket, chatRoom]);
+
+  useEffect(() => {
+    if (incomingMessages.length > 0) {
+      setMessages((prev) => [...prev, ...incomingMessages]);
+      setIncomingMessages([]);
+    }
+  }, [incomingMessages]);
+
+  // Listen for user joined events to update member count
+  useEffect(() => {
+    if (!socket || !chatRoom) return;
+
+    const handleUserJoined = (data) => {
+      if (data.groupName === chatRoom.name) {
+        setMemberCount(data.memberCount);
       }
     };
 
-    socket?.on('getGroupMessage', handleGetGroupMessage);
+    socket.on('userJoinedGroup', handleUserJoined);
 
     return () => {
-      socket?.off('getGroupMessage', handleGetGroupMessage);
+      socket.off('userJoinedGroup', handleUserJoined);
     };
-  }, [socket, currentChat._id]);
-
-  useEffect(() => {
-    incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
-  }, [incomingMessage]);
+  }, [socket, chatRoom]);
 
   const handleFormSubmit = async (message, imageUrl) => {
-    socket?.emit('sendGroupMessage', {
-      senderId: currentUser._id,
-      message: message,
-      groupChatRoomId: currentChat._id,
-      imageUrl,
-    });
+    if (!socket || !currentUser || !chatRoom) return;
 
-    const messageBody = {
-      groupChatRoomId: currentChat._id,
-      sender: currentUser._id,
-      message: message,
-      imageUrl,
-    };
-    const res = await sendGroupMessage(messageBody);
-    setMessages((prev) => [...prev, res]);
+    socket.emit(
+      'sendGroupMessage',
+      {
+        groupName: chatRoom.name,
+        sender: currentUser.username,
+        message,
+        imageUrl,
+      },
+      (response) => {
+        if (response.success) {
+          // Message saved and will be received via 'receiveGroupMessage' listener
+          // No need to update state here as the socket listener will handle it
+        } else {
+          console.error('Failed to send group message:', response.error);
+          alert('Failed to send message. Please try again.');
+        }
+      },
+    );
   };
+
+  // Prevent errors on refresh when chatRoom is not yet loaded
+  if (!chatRoom) return null;
 
   return (
     <div className="lg:col-span-2 lg:block">
       <div className="w-full">
         {/* Group Header */}
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="p-3 bg-pink-50 border-b border-pink-200 dark:bg-pink-900 dark:border-pink-700">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <img
-                className="w-12 h-12 rounded-full"
-                src={currentChat.avatar}
-                alt={currentChat.name}
-              />
+              <img className="w-12 h-12 rounded-full" src={chatRoom.avatar} alt={chatRoom.name} />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {currentChat.name}
+                  {chatRoom.name}
                 </h3>
                 <UserGroupIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {currentChat.members.length} member
-                {currentChat.members.length !== 1 ? 's' : ''}
-                {currentChat.description && ` • ${currentChat.description}`}
+                {memberCount} member
+                {memberCount !== 1 ? 's' : ''} •{' '}
+                {chatRoom.members?.filter((member) => isUserOnline(member)).length || 0} online
+                {chatRoom.description && ` • ${chatRoom.description}`}
               </p>
             </div>
+            {/* Members sidebar button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 transition"
+              title="View members"
+            >
+              <UsersIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Members</span>
+            </button>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white dark:bg-gray-900">
+        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-pink-200 dark:bg-gray-700 dark:border-pink-700">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>
-                <Message message={message} self={currentUser._id} isGroupChat={true} />
+                <Message
+                  message={message}
+                  isGroupChat={true}
+                  senderAvatar={getUserAvatar(message.sender)}
+                />
               </div>
             ))}
           </ul>
@@ -116,6 +184,15 @@ export default function GroupChatRoom() {
         {/* Message Input */}
         <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>
+
+      {/* Members Sidebar */}
+      <GroupMembersSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        members={chatRoom.members}
+        allUsers={allUsers}
+        isUserOnline={isUserOnline}
+      />
     </div>
   );
 }

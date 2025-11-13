@@ -42,7 +42,7 @@ export default function ThemeToggler() {
     <button
       ref={themeToggleBtn}
       type="button"
-      className="text-text-deep dark:text-gray-400 hover:bg-bg-grey dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
+      className="text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 focus:outline-none rounded-lg text-sm p-2.5 transition"
       onClick={() => handleThemeToggle()}
     >
       <svg

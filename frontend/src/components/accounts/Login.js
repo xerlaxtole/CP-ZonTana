@@ -33,13 +33,13 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-pink-50 dark:bg-pink-900">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-4 text-3xl text-center tracking-tight font-light dark:text-white">
+          <h2 className="mt-4 text-3xl text-center tracking-tight font-light dark:text-white text-pink-600">
             Enter your username
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-pink-500 dark:text-pink-300">
             If you're new, an account will be created automatically
           </p>
         </div>
@@ -52,7 +52,7 @@ export default function Login() {
                 type="text"
                 autoComplete="username"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 placeholder-gray-500 bg-gray-50 border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 placeholder-pink-500 bg-white dark:bg-pink-700 border border-pink-300 dark:border-pink-600 text-pink-900 dark:text-white text-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500 dark:focus:ring-pink-400 dark:focus:border-pink-400 focus:z-10 sm:text-sm"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -64,7 +64,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-sky-800 hover:bg-sky-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : 'Continue'}
             </button>
