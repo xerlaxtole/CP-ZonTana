@@ -120,7 +120,9 @@ export default function ChatForm(props) {
 
           <button onClick={handleImageButtonClick} disabled={isCompressing}>
             <PhotographIcon
-              className={`h-7 w-7 ${isCompressing ? 'text-gray-400' : 'text-blue-600 dark:text-blue-500'}`}
+              className={`h-7 w-7 ${
+                isCompressing ? 'text-gray-400' : 'text-blue-600 dark:text-blue-500'
+              }`}
               aria-hidden="true"
             />
           </button>

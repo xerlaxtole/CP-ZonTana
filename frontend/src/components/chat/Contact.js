@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react';
-
 import { getUser } from '../../services/ChatService';
 import UserLayout from '../layouts/UserLayout';
+import { useChat } from '../../contexts/ChatContext';
 
-export default function Contact({ chatRoom, onlineUsersId, currentUser }) {
+export default function Contact({ chatRoom }) {
+  const { currentUser } = useChat();
   const [contact, setContact] = useState();
 
   useEffect(() => {
-    const contactId = chatRoom.members?.find((memberId) => memberId !== currentUser._id);
+    const contactName = chatRoom.members?.find((memberName) => memberName !== currentUser.username);
 
     const fetchData = async () => {
-      const res = await getUser(contactId);
-      setContact(res);
+      const user = await getUser(contactName);
+      setContact(user);
     };
 
     fetchData();
   }, [chatRoom, currentUser]);
 
-  return <UserLayout user={contact} onlineUsersId={onlineUsersId} />;
+  return <UserLayout user={contact} />;
 }

@@ -25,6 +25,11 @@ export const login = async (req, res) => {
         avatar: randomAvatar,
       });
       await user.save();
+
+      // Notify all connected clients about the new user
+      if (global.io) {
+        global.io.emit('new:user');
+      }
     }
 
     // Generate JWT token

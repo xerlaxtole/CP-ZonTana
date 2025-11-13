@@ -1,4 +1,5 @@
 import GroupChatRoom from '../models/GroupChatRoom.js';
+import User from '../models/User.js';
 
 export const createGroupChatRoom = async (req, res) => {
   const { name, description, createdBy } = req.body;
@@ -6,7 +7,6 @@ export const createGroupChatRoom = async (req, res) => {
   const newGroupChatRoom = new GroupChatRoom({
     name,
     description: description || '',
-    createdBy,
     members: [createdBy], // Creator is the first member
     avatar: `https://api.dicebear.com/7.x/shapes/svg?seed=${name}`,
   });
@@ -37,7 +37,7 @@ export const getAllGroupChatRooms = async (req, res) => {
 export const getGroupChatRoomsOfUser = async (req, res) => {
   try {
     const groupChatRooms = await GroupChatRoom.find({
-      members: { $in: [req.params.userId] },
+      members: { $in: [req.params.username] },
     }).sort({ updatedAt: -1 });
     res.status(200).json(groupChatRooms);
   } catch (error) {
@@ -48,24 +48,33 @@ export const getGroupChatRoomsOfUser = async (req, res) => {
 };
 
 export const joinGroupChatRoom = async (req, res) => {
-  const { groupId } = req.params;
-  const { userId } = req.body;
+  const { groupName } = req.params;
+  const { userName } = req.body;
 
   try {
-    const groupChatRoom = await GroupChatRoom.findById(groupId);
-
+    const groupChatRoom = await GroupChatRoom.findOne({ name: groupName });
     if (!groupChatRoom) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
+    const user = await User.findOne({
+      username: userName,
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     // Check if user is already a member
-    if (groupChatRoom.members.includes(userId)) {
+    if (groupChatRoom.members.includes(user.username) || user.groups.includes(groupChatRoom.name)) {
       return res.status(400).json({ message: 'Already a member' });
     }
 
     // Add user to members
-    groupChatRoom.members.push(userId);
+    groupChatRoom.members.push(user.username);
     await groupChatRoom.save();
+
+    user.groups.push(groupChatRoom.name);
+    await user.save();
 
     res.status(200).json(groupChatRoom);
   } catch (error) {
@@ -77,7 +86,7 @@ export const joinGroupChatRoom = async (req, res) => {
 
 export const getGroupChatRoomById = async (req, res) => {
   try {
-    const groupChatRoom = await GroupChatRoom.findById(req.params.groupId);
+    const groupChatRoom = await GroupChatRoom.findOne({ name: req.params.groupName });
     if (!groupChatRoom) {
       return res.status(404).json({ message: 'Group not found' });
     }

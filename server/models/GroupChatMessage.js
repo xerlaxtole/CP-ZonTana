@@ -2,12 +2,17 @@ import mongoose from 'mongoose';
 
 const GroupChatMessageSchema = mongoose.Schema(
   {
-    groupChatRoomId: String,
+    groupName: String,
+    // username of the sender
     sender: String,
     message: String,
     imageUrl: {
       type: String,
       default: null,
+    },
+    isSystemMessage: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },
