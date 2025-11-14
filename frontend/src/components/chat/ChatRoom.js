@@ -8,7 +8,7 @@ export default function ChatRoom({ chatRoom }) {
   const { currentUser, socket, isSocketConnected } = useChat();
   const [messages, setMessages] = useState([]);
   const [incomingMessages, setIncomingMessages] = useState([]);
-  const [isRoomJoined, setIsRoomJoined] = useState(false);
+  const [, setIsRoomJoined] = useState(false);
 
   const scrollRef = useRef();
 
