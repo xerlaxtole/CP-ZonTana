@@ -5,13 +5,9 @@ import Contact from './Contact';
 import UserLayout from '../layouts/UserLayout';
 import SearchUsers from './SearchUsers';
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
 export default function AllUsers({ onChangeChat }) {
   const { currentUser, socket, allUsers, isUserOnline } = useChat();
-  const [selectedChatIdx, setSelectedChat] = useState(null);
+  const [, setSelectedChat] = useState(null);
   const [otherUsers, setOtherUsers] = useState([]);
   const [myChatRooms, setMyChatRooms] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');

@@ -24,7 +24,7 @@ export default function GroupChatList({ onChangeChat }) {
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
   const [myGroups, setMyGroups] = useState([]);
   const [availableGroups, setAvailableGroups] = useState([]);
-  const [selectedChatIdx, setSelectedChatIdx] = useState(null);
+  const [, setSelectedChatIdx] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -50,23 +50,23 @@ export default function GroupChatList({ onChangeChat }) {
     if (!socket || !currentUser) return;
 
     const handleNewGroup = (newGroup) => {
-      // Avoid duplicates
-      const alreadyExists =
-        myGroups.some((g) => g.name === newGroup.name) ||
-        availableGroups.some((g) => g.name === newGroup.name);
-      if (alreadyExists) return;
+      // Avoid duplicates and add to appropriate list based on membership
+      setMyGroups((prev) => {
+        const alreadyExists = prev.some((g) => g.name === newGroup.name);
+        if (alreadyExists || !newGroup.members.includes(currentUser.username)) return prev;
+        return [...prev, newGroup];
+      });
 
-      // Add to appropriate list based on membership
-      if (newGroup.members.includes(currentUser.username)) {
-        setMyGroups((prev) => [...prev, newGroup]);
-      } else {
-        setAvailableGroups((prev) => [...prev, newGroup]);
-      }
+      setAvailableGroups((prev) => {
+        const alreadyExists = prev.some((g) => g.name === newGroup.name);
+        if (alreadyExists || newGroup.members.includes(currentUser.username)) return prev;
+        return [...prev, newGroup];
+      });
     };
 
     socket.on('newGroupCreated', handleNewGroup);
     return () => socket.off('newGroupCreated', handleNewGroup);
-  }, [socket, currentUser, myGroups, availableGroups]);
+  }, [currentUser]);
 
   // Listen for member count updates when users join groups
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function GroupChatList({ onChangeChat }) {
 
     socket.on('groupMemberCountUpdated', handleMemberUpdate);
     return () => socket.off('groupMemberCountUpdated', handleMemberUpdate);
-  }, [socket]);
+  }, []);
 
   const changeCurrentGroupChat = (index, chat) => {
     setSelectedChatIdx(index);
