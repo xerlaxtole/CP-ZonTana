@@ -2,7 +2,7 @@ import { LogoutIcon } from '@heroicons/react/outline';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logout from '../accounts/Logout';
-import ThemeToggler from './ThemeToggler';
+
 import { useChat } from '../../contexts/ChatContext';
 
 export default function Header() {
@@ -23,8 +23,7 @@ export default function Header() {
           </Link>
 
           {/* Right Side Controls */}
-          <div className="flex items-center space-x-2 md:order-2">
-            <ThemeToggler />
+          <div className="flex items-center space-x-2 md:order-2">        
 
             {currentUser && (
               <>

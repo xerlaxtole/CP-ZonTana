@@ -122,9 +122,9 @@ export default function ChatRoom({ chatRoom }) {
   );
 
   return (
-    <div className="lg:col-span-2 lg:block bg-white dark:bg-gray-700 dark:border-gray-ng-pink-500 rounded-lg ">
+    <div className="lg:col-span-2 lg:block bg-white border-b-0 dark:bg-gray-700 dark:border-gray-ng-pink-500 rounded-lg ">
       <div className="w-full  ">
-        <div className="p-3 bg-pink-50 border-b border-pink-700 dark:bg-pink-800 dark:border-pink-900">
+        <div className="p-3 bg-pink-50 h-[73px] border-b-0 border-pink-700 dark:bg-pink-800 dark:border-pink-900">
           <Contact chatRoom={chatRoom} />
         </div>
 

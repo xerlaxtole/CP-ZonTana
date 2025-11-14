@@ -31,7 +31,7 @@ function App() {
           </header>
 
           {/* 🌸 Main Content */}
-          <div className="relative z-20 pt-[4.5rem] min-h-screen ">
+          <div className="relative z-20 pt-[4.5rem] h-screen overflow-hidden">
             <ErrorMessage />
             <Routes>
               <Route exact path="/login" element={<Login />} />

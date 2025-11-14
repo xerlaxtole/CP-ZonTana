@@ -16,7 +16,7 @@ export default function ChatLayout() {
   }, [activeTab, currentDirectChatRoom, currentGroupChatRoom]);
 
   return (
-    <div className="container mx-auto mt-1 shadow-lg rounded-lg h-[calc(100vh-6rem)]">
+    <div className="container mx-auto h-[847px] ">
       <div className="min-w-full h-full bg-pink-50 border-x border-b border-pink-200 dark:bg-pink-900 dark:border-pink-700 rounded lg:grid lg:grid-cols-3">
         <div className="bg-pink-50 border-r border-pink-200 dark:bg-pink-900 dark:border-pink-700 lg:col-span-1">
           {/* Tabs */}
