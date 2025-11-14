@@ -138,7 +138,7 @@ export default function ChatRoom({ chatRoom }) {
           </ul>
         </div>
 
-        <ChatForm  handleFormSubmit={handleFormSubmit} />
+        <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>
     </div>
   );

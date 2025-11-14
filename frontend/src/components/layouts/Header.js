@@ -23,8 +23,7 @@ export default function Header() {
           </Link>
 
           {/* Right Side Controls */}
-          <div className="flex items-center space-x-2 md:order-2">        
-
+          <div className="flex items-center space-x-2 md:order-2">
             {currentUser && (
               <>
                 <button
@@ -36,13 +35,16 @@ export default function Header() {
 
                 <Link
                   to="/profile"
-                  className="text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 focus:outline-none rounded-full text-sm p-2.5 transition"
+                  className="text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 focus:outline-none rounded-lg text-sm p-2.5 transition"
                 >
-                  <img
-                    className="h-8 w-8 rounded-full border-2 border-pink-400 dark:border-pink-300"
-                    src={currentUser.avatar}
-                    alt=""
-                  />
+                  <div className="flex items-center gap-x-2">
+                    {currentUser.username}
+                    <img
+                      className="h-8 w-8 rounded-full border-2 border-pink-400 dark:border-pink-300"
+                      src={currentUser.avatar}
+                      alt=""
+                    />
+                  </div>
                 </Link>
               </>
             )}
