@@ -35,7 +35,7 @@ app.set('trust proxy', 1);
 
 app.use(
   cors({
-    origin: ['https://cp-zontana-production.up.railway.app', 'http://localhost:3000'],
+    origin: ['https://cp-zontana-production.up.railway.app', 'http://localhost:3000','https://zontanafront.onrender.com','https://zontana.up.railway.app'],
     credentials: true,
   }),
 );
