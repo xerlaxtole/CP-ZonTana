@@ -19,6 +19,9 @@ module.exports = {
           'blue-light': '#E8F4FF',
         },
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
     },
   },
   darkMode: 'class',

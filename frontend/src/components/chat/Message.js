@@ -32,7 +32,7 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
       <li className="flex justify-center my-2">
         <div className="text-center">
           <span className="text-sm italic text-pink-500 dark:text-pink-400">{message.message}</span>
-          <span className="block text-xs text-pink-400 dark:text-pink-500 mt-1">
+          <span className="block text-xs text-pink-1000 dark:text-pink-500 mt-1">
             {formattedTime}
           </span>
         </div>
@@ -50,7 +50,7 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
               {message.sender}
             </p>
           )}
-          <div className="flex gap-2 items-start">
+          <div className={classNames(isOwn ? 'flex-row' : 'flex-row-reverse', 'flex gap-2 items-end')}>
             {/* Show avatar for group chat messages from others */}
             {isGroupChat && !isOwn && senderAvatar && (
               <div className="relative flex-shrink-0">
@@ -63,12 +63,18 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
                 )}
               </div>
             )}
+
+            {/* Timestamp - appears after sender bubble (right), before receiver bubble (left) */}
+            <span className="text-xs text-pink-500 dark:text-pink-400 self-end pb-1">
+              {formattedTime}
+            </span>
+
             <div>
               <div
                 className={classNames(
                   isOwn
-                    ? 'bg-pink-600 dark:bg-pink-500 text-white'
-                    : 'text-gray-700 dark:text-gray-400 bg-white border border-pink-200 shadow-md dark:bg-pink-900 dark:border-pink-700',
+                    ? 'rounded-3xl bg-gradient-radial from-pink-500 via-pink-500 to-pink-700 dark:bg-gradient-radial dark:from-pink-500 dark:via-pink-600 dark:to-pink-800 text-white'
+                    : 'rounded-3xl text-gray-700 dark:text-gray-400 bg-gradient-radial from-pink-50 via-white to-pink-100 border border-pink-200 shadow-md dark:bg-gradient-radial dark:from-pink-800 dark:via-pink-900 dark:to-gray-900 dark:border-pink-700',
                   'relative inline-block max-w-xl px-4 py-2 rounded-lg shadow',
                 )}
               >
@@ -81,9 +87,6 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
                 )}
                 {message.message && <span className="font-normal">{message.message}</span>}
               </div>
-              <span className="block text-sm text-pink-500 dark:text-pink-400">
-                {formattedTime}
-              </span>
             </div>
           </div>
         </div>

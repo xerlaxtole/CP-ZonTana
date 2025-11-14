@@ -128,7 +128,7 @@ export default function AllUsers({ onChangeChat }) {
   return (
     <>
       <SearchUsers handleSearch={(searchTerm) => setSearchTerm(searchTerm)} />
-      <ul className="overflow-auto h-[30rem]">
+      <ul className="overflow-auto h-[45rem]">
         <h2 className="my-2 mb-2 ml-2 text-pink-600 dark:text-white">Chats</h2>
         <li>
           {myChatRooms.map((chatRoom, index) => (
