@@ -150,7 +150,7 @@ export default function GroupChatList({ onChangeChat }) {
 
   return (
     <>
-      <div className="overflow-auto h-[30rem]">
+      <div className="overflow-auto h-[45rem]">
         {/* My Groups Section */}
         <div className="flex items-center justify-between my-2 ml-2 mr-2">
           <h2 className="text-x1 font-semibold text-pink-700 dark:text-white mb-2">My Groups</h2>

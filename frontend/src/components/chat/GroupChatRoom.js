@@ -132,7 +132,7 @@ export default function GroupChatRoom({ chatRoom }) {
   if (!chatRoom) return null;
 
   return (
-    <div className="lg:col-span-2 lg:block">
+    <div className="lg:col-span-2 lg:block bg-white dark:bg-gray-700 dark:border-gray-ng-pink-500 rounded-lg">
       <div className="w-full">
         {/* Group Header */}
         <div className="p-3 bg-pink-50 border-b border-pink-200 dark:bg-pink-900 dark:border-pink-700">
@@ -167,7 +167,7 @@ export default function GroupChatRoom({ chatRoom }) {
         </div>
 
         {/* Messages */}
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-pink-200 dark:bg-gray-700 dark:border-pink-700">
+        <div className="relative w-full p-6 overflow-y-auto h-[43.5rem] bg-white  border-pink-200 dark:bg-gray-700 dark:border-pink-700">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>
@@ -182,7 +182,9 @@ export default function GroupChatRoom({ chatRoom }) {
         </div>
 
         {/* Message Input */}
+    
         <ChatForm handleFormSubmit={handleFormSubmit} />
+        
       </div>
 
       {/* Members Sidebar */}

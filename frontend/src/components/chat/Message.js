@@ -50,7 +50,7 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
               {message.sender}
             </p>
           )}
-          <div className={classNames(isOwn ? 'flex-row' : 'flex-row-reverse', 'flex gap-2 items-end')}>
+          <div className={classNames(isOwn ? 'flex-row-reverse' : 'flex-row', 'flex gap-2 items-end')}>
             {/* Show avatar for group chat messages from others */}
             {isGroupChat && !isOwn && senderAvatar && (
               <div className="relative flex-shrink-0">
@@ -64,12 +64,7 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
               </div>
             )}
 
-            {/* Timestamp - appears after sender bubble (right), before receiver bubble (left) */}
-            <span className="text-xs text-pink-500 dark:text-pink-400 self-end pb-1">
-              {formattedTime}
-            </span>
-
-            <div>
+            <div className="flex-1">
               <div
                 className={classNames(
                   isOwn
@@ -88,6 +83,11 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
                 {message.message && <span className="font-normal">{message.message}</span>}
               </div>
             </div>
+
+            {/* Timestamp - appears after receiver bubble (right), before sender bubble (left) */}
+            <span className="text-xs text-pink-500 dark:text-pink-400 self-end pb-1">
+              {formattedTime}
+            </span>
           </div>
         </div>
       </li>
