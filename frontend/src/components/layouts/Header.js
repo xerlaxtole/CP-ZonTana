@@ -16,7 +16,7 @@ export default function Header() {
         <div className="container mx-auto flex flex-wrap items-center justify-between">
           {/* Logo + Brand */}
           <Link to="/" className="flex items-center">
-            <img src="/logo.png" alt="Zontana Logo" className="h-8 w-8 mr-2" />
+            <img src="/logo.png" alt="Zontana Logo" className="h-10 w-10 " />
             <span className="self-center text-lg font-bold whitespace-nowrap text-pink-700 dark:text-white">
               ZonTana
             </span>
