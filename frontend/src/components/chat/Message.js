@@ -73,7 +73,9 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
               {message.sender}
             </p>
           )}
-          <div className={classNames(isOwn ? 'flex-row-reverse' : 'flex-row', 'flex gap-2 items-end')}>
+          <div
+            className={classNames(isOwn ? 'flex-row-reverse' : 'flex-row', 'flex gap-2 items-end')}
+          >
             {/* Show avatar for group chat messages from others */}
             {isGroupChat && !isOwn && senderAvatar && (
               <div className="relative flex-shrink-0">
@@ -93,7 +95,7 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
                   isOwn
                     ? ' bg-gradient-radial from-pink-400 via-pink-400 to-pink-600 dark:bg-gradient-radial dark:from-pink-500 dark:via-pink-600 dark:to-pink-800 text-white'
                     : ' text-gray-700 dark:text-gray-400 bg-gradient-radial from-pink-50 via-white to-pink-100 border border-pink-200 shadow-md dark:bg-gradient-radial dark:from-pink-800 dark:via-pink-900 dark:to-gray-900 dark:border-pink-700',
-                  'relative inline-block max-w-xl px-4 py-2 rounded-3xl shadow',
+                  'relative inline-block max-w-xl px-4 py-2 rounded-3xl shadow break-words overflow-wrap-anywhere',
                 )}
               >
                 {message.imageUrl && (
