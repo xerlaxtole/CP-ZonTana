@@ -111,6 +111,9 @@ export default function AllUsers({ onChangeChat }) {
           const indexToSelect = chatRoomIndex !== -1 ? chatRoomIndex : myChatRooms.length;
           setSelectedChat(indexToSelect);
           onChangeChat(chatRoom);
+
+          // Refresh users and chats to move user from "Other Users" to "Chats"
+          refreshUsersAndChats();
         } else {
           console.error('Failed to create chat room:', response.error);
           alert('Failed to create chat room. Please try again.');
