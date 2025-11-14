@@ -6,11 +6,7 @@ export default function ThemeToggler() {
   const themeToggleDarkIcon = useRef();
 
   useEffect(() => {
-    if (
-      localStorage.getItem('color-theme') === 'dark' ||
-      (!('color-theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
+    if (localStorage.getItem('color-theme') === 'dark') {
       document.documentElement.classList.add('dark');
       themeToggleLightIcon.current.classList.remove('hidden');
     } else {
@@ -46,7 +42,7 @@ export default function ThemeToggler() {
     <button
       ref={themeToggleBtn}
       type="button"
-      className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
+      className="text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800 focus:outline-none rounded-lg text-sm p-2.5 transition"
       onClick={() => handleThemeToggle()}
     >
       <svg

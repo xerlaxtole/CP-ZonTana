@@ -82,7 +82,7 @@ export default function Profile() {
           )}
         </div>
         <form className="space-y-6" onSubmit={handleFormSubmit}>
-          <div className="flex flex-wrap justify-center -m-1 md:-m-2">
+          <div className="flex flex-wrap justify-center -m-1 md:-m-2 bg-pink-100 dark:bg-pink-800 p-4 rounded-lg">
             {avatars.map((avatar, index) => (
               <div key={index} className="flex flex-wrap w-1/3">
                 <div className="w-full p-1 md:p-2">
@@ -90,8 +90,8 @@ export default function Profile() {
                     alt={`Avatar ${index + 1}`}
                     className={classNames(
                       index === selectedAvatar
-                        ? 'border-4 border-blue-700 dark:border-blue-700'
-                        : 'cursor-pointer hover:border-4 hover:border-blue-700',
+                        ? 'border-4 border-pink-600 dark:border-pink-400'
+                        : 'cursor-pointer hover:border-4 hover:border-pink-600',
                       'block object-cover object-center w-24 h-24 rounded-full mx-auto',
                     )}
                     src={avatar}
@@ -108,7 +108,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Updating...' : 'Update Avatar'}
             </button>

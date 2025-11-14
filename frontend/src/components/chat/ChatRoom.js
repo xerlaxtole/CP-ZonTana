@@ -122,14 +122,14 @@ export default function ChatRoom({ chatRoom }) {
   );
 
   return (
-    <div className="lg:col-span-2 lg:block">
-      <div className="w-full">
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+    <div className="lg:col-span-2 lg:block bg-white dark:bg-gray-700 dark:border-gray-ng-pink-500 rounded-lg ">
+      <div className="w-full  ">
+        <div className="p-3 bg-pink-50 border-b border-pink-700 dark:bg-pink-800 dark:border-pink-900">
           <Contact chatRoom={chatRoom} />
         </div>
 
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-          <ul className="space-y-2">
+        <div className="relative w-full p-6 overflow-y-auto h-[43rem] bg-white  dark:bg-gray-700 dark:border-gray-ng-pink-500 ">
+          <ul className="space-y-2 ">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>
                 <Message message={message} />
@@ -138,7 +138,7 @@ export default function ChatRoom({ chatRoom }) {
           </ul>
         </div>
 
-        <ChatForm handleFormSubmit={handleFormSubmit} />
+        <ChatForm  handleFormSubmit={handleFormSubmit} />
       </div>
     </div>
   );

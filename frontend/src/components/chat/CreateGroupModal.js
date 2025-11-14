@@ -47,12 +47,14 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Create Group Chat</h2>
+      <div className="bg-pink-200 dark:bg-pink-700 rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div className="flex items-center justify-between p-4 border-b dark:border-pink-600">
+          <h2 className="text-x1 font-semibold text-pink-700 dark:text-white mb-2">
+            Create Group Chat
+          </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="text-white hover:text-gray-300 dark:hover:text-gray-100"
           >
             <XIcon className="w-6 h-6" />
           </button>
@@ -68,7 +70,7 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
           <div className="mb-4">
             <label
               htmlFor="groupName"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-pink-700 dark:text-pink-200 mb-2"
             >
               Group Name *
             </label>
@@ -77,7 +79,7 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
               id="groupName"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-pink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-pink-800 dark:text-white"
               placeholder="Enter group name"
               maxLength={50}
               disabled={isSubmitting}
@@ -87,7 +89,7 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
           <div className="mb-6">
             <label
               htmlFor="description"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-pink-700 dark:text-pink-200 mb-2"
             >
               Description (optional)
             </label>
@@ -95,7 +97,7 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-pink-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-pink-800 dark:text-white resize-none"
               placeholder="Enter group description"
               rows={3}
               maxLength={200}
@@ -107,14 +109,14 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-pink-600 rounded-lg text-white hover:bg-pink-600 dark:hover:bg-pink-800 transition"
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:bg-blue-300 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition disabled:bg-pink-300 disabled:cursor-not-allowed"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Creating...' : 'Create Group'}

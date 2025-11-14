@@ -128,30 +128,25 @@ export default function AllUsers({ onChangeChat }) {
   return (
     <>
       <SearchUsers handleSearch={(searchTerm) => setSearchTerm(searchTerm)} />
-      <ul className="overflow-auto h-[30rem]">
-        <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white">Chats</h2>
+      <ul className="overflow-auto h-[45rem]">
+        <h2 className="my-2 mb-2 ml-2 text-pink-600 dark:text-white">Chats</h2>
         <li>
           {myChatRooms.map((chatRoom, index) => (
             <div
               key={index}
-              className={classNames(
-                index === selectedChatIdx
-                  ? 'bg-gray-100 dark:bg-gray-700'
-                  : 'transition duration-150 ease-in-out cursor-pointer bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700',
-                'flex items-center px-3 py-2 text-sm ',
-              )}
+              className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-pink-100 dark:bg-gray-700 dark:border-gray-700 dark:hover:bg-pink-700 cursor-pointer"
               onClick={() => handleSelectChat(index)}
             >
               <Contact chatRoom={chatRoom} />
             </div>
           ))}
         </li>
-        <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white">Other Users</h2>
+        <h2 className="my-2 mb-2 ml-2 text-pink-600 dark:text-white">Other Users</h2>
         <li>
           {otherUsers.map((otherUser, index) => (
             <div
               key={index}
-              className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer"
+              className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-pink-100 dark:bg-gray-700 dark:border-gray-700 dark:hover:bg-pink-700 cursor-pointer"
               onClick={() => handleNewChatRoom(otherUser)}
             >
               <UserLayout user={otherUser} />
