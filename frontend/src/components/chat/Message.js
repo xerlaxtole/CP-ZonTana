@@ -68,9 +68,9 @@ export default function Message({ message, isGroupChat = false, senderAvatar }) 
               <div
                 className={classNames(
                   isOwn
-                    ? 'rounded-3xl bg-gradient-radial from-pink-500 via-pink-500 to-pink-700 dark:bg-gradient-radial dark:from-pink-500 dark:via-pink-600 dark:to-pink-800 text-white'
-                    : 'rounded-3xl text-gray-700 dark:text-gray-400 bg-gradient-radial from-pink-50 via-white to-pink-100 border border-pink-200 shadow-md dark:bg-gradient-radial dark:from-pink-800 dark:via-pink-900 dark:to-gray-900 dark:border-pink-700',
-                  'relative inline-block max-w-xl px-4 py-2 rounded-lg shadow',
+                    ? ' bg-gradient-radial from-pink-400 via-pink-500 to-pink-600 dark:bg-gradient-radial dark:from-pink-500 dark:via-pink-600 dark:to-pink-800 text-white'
+                    : ' text-gray-700 dark:text-gray-400 bg-gradient-radial from-pink-50 via-white to-pink-100 border border-pink-200 shadow-md dark:bg-gradient-radial dark:from-pink-800 dark:via-pink-900 dark:to-gray-900 dark:border-pink-700',
+                  'relative inline-block max-w-xl px-4 py-2 rounded-3xl shadow',
                 )}
               >
                 {message.imageUrl && (

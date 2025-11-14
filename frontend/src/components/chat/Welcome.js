@@ -8,8 +8,8 @@ export default function Welcome() {
             alt="Welcome"
             className="w-full mt-20 opacity-90 mask-gradient"
             style={{
-              maskImage: 'radial-gradient(ellipse at center, black 55%, transparent 70%)',
-              WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)'
+              maskImage: 'radial-gradient(ellipse at center, black 45%, transparent 69%)',
+              WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)'
             }}
           />
         </div>

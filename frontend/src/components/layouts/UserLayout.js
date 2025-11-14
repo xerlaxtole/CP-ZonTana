@@ -4,7 +4,7 @@ export default function UserLayout({ user }) {
   const { isUserOnline } = useChat();
 
   return (
-    <div className="relative flex items-center p-2 rounded-lg">
+    <div className="relative flex items-center  rounded-lg">
       <img
         className="w-10 h-10 rounded-full border-2 border-pink-300 dark:border-pink-400"
         src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
