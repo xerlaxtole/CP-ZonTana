@@ -110,3 +110,15 @@ export const getGroupChatRoomById = async (groupName) => {
     throw e;
   }
 };
+
+export const getglobalChatRoom = async () => {
+  const header = createHeader();
+
+  try {
+    const res = await axios.get(`${baseURL}/global`, header);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+};

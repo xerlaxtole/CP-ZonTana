@@ -35,7 +35,12 @@ app.set('trust proxy', 1);
 
 app.use(
   cors({
-    origin: ['https://cp-zontana-production.up.railway.app', 'http://localhost:3000','https://zontanafront.onrender.com','https://zontana.up.railway.app'],
+    origin: [
+      'https://cp-zontana-production.up.railway.app',
+      'http://localhost:3000',
+      'https://zontanafront.onrender.com',
+      'https://zontana.up.railway.app',
+    ],
     credentials: true,
   }),
 );
@@ -62,7 +67,12 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server, {
   cors: {
-    origin: ['https://cp-zontana-production.up.railway.app', 'http://localhost:3000','https://zontanafront.onrender.com','https://zontana.up.railway.app'],
+    origin: [
+      'https://cp-zontana-production.up.railway.app',
+      'http://localhost:3000',
+      'https://zontanafront.onrender.com',
+      'https://zontana.up.railway.app',
+    ],
     credentials: true,
   },
   // Configure transports for Railway's proxy environment
