@@ -27,6 +27,7 @@ import GroupChatRoom from './models/GroupChatRoom.js';
 import GroupChatMessage from './models/GroupChatMessage.js';
 import ChatMessage from './models/ChatMessage.js';
 import ChatRoom from './models/ChatRoom.js';
+import User from './models/User.js';
 
 const app = express();
 
@@ -61,8 +62,23 @@ app.use('/api/message', chatMessageRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/group', groupRoutes);
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`Server listening on port ${PORT}`);
+
+  // Ensure global chat room exists
+  await GroupChatRoom.findOne({ name: 'global' }).then(async (room) => {
+    if (!room) {
+      const users = await User.find();
+
+      const globalRoom = new GroupChatRoom({
+        name: 'global',
+        members: users.map((user) => user.username),
+        avatar: 'https://cdn-icons-png.freepik.com/512/7296/7296866.png',
+      });
+      await globalRoom.save();
+      console.log('Created global chat room');
+    }
+  });
 });
 
 const io = new Server(server, {
@@ -243,13 +259,15 @@ io.on('connection', (socket) => {
       await groupChatRoom.save();
 
       // Create system message for user joining
-      const systemMessage = new GroupChatMessage({
-        groupName,
-        sender: 'System',
-        message: `${username} joined ${groupName}`,
-        isSystemMessage: true,
-      });
-      await systemMessage.save();
+      if (groupName !== 'global') {
+        const systemMessage = new GroupChatMessage({
+          groupName,
+          sender: 'System',
+          message: `${username} joined ${groupName}`,
+          isSystemMessage: true,
+        });
+        await systemMessage.save();
+      }
 
       // Broadcast system message to all group members
       io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
