@@ -259,6 +259,11 @@ io.on('connection', (socket) => {
 
       // Check if already a member
       if (groupChatRoom.members.includes(username)) {
+        // For global chat, allow re-joining (they should always be members)
+        if (groupName === 'global') {
+          return callback({ success: true, group: groupChatRoom });
+        }
+        // For other groups, reject duplicate joins
         return callback({ success: false, error: 'Already a member' });
       }
 
