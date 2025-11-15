@@ -1,21 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { useAuth } from '../../contexts/AuthContext';
+import { socket } from '../../socket';
 
 export default function Login() {
   const navigate = useNavigate();
-
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { currentUser, login, error, setError } = useAuth();
 
-  useEffect(() => {
-    if (currentUser) {
-      navigate('/');
-    }
-  }, [currentUser, navigate]);
+  const joinGlobalGroup = () => {
+    return new Promise((resolve, reject) => {
+      socket.emit(
+        'joinGroup',
+        {
+          groupName: 'global',
+          username: username,
+        },
+        (response) => {
+          if (response.success) {
+            resolve(response.group); // Success! Continue the code
+          } else {
+            console.error('Failed to join group:', response.error);
+            alert('Failed to join group. Please try again.');
+            reject(new Error(response.error)); // Stop the code
+          }
+        },
+      );
+    });
+  };
 
   async function handleFormSubmit(e) {
     e.preventDefault();
@@ -24,6 +38,7 @@ export default function Login() {
       setError('');
       setLoading(true);
       await login(username);
+      await joinGlobalGroup();
       navigate('/');
     } catch (e) {
       setError(e.message || 'Failed to login');
