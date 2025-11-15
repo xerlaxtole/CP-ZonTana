@@ -32,12 +32,15 @@ export default function GroupChatList({ onChangeChat }) {
     const fetchGroups = async () => {
       const allGroups = await getAllGroupChatRooms();
 
-      const joinedGroups = allGroups.filter((group) =>
+      // Filter out global chat from the group list
+      const filteredGroups = allGroups.filter((group) => group.name !== 'global');
+
+      const joinedGroups = filteredGroups.filter((group) =>
         group.members.some((memberName) => memberName === currentUser.username),
       );
       setMyGroups(joinedGroups);
 
-      const notJoinedGroups = allGroups.filter(
+      const notJoinedGroups = filteredGroups.filter(
         (group) => !group.members.some((memberName) => memberName === currentUser.username),
       );
       setAvailableGroups(notJoinedGroups);
@@ -50,6 +53,9 @@ export default function GroupChatList({ onChangeChat }) {
     if (!socket || !currentUser) return;
 
     const handleNewGroup = (newGroup) => {
+      // Ignore global chat
+      if (newGroup.name === 'global') return;
+
       // Avoid duplicates and add to appropriate list based on membership
       setMyGroups((prev) => {
         const alreadyExists = prev.some((g) => g.name === newGroup.name);
@@ -90,6 +96,12 @@ export default function GroupChatList({ onChangeChat }) {
     const { name, description, createdBy } = data;
 
     if (!socket) return;
+
+    // Validate group name is not 'global'
+    if (name.toLowerCase() === 'global') {
+      alert('Group name "global" is reserved and cannot be used');
+      return;
+    }
 
     socket.emit(
       'createGroup',

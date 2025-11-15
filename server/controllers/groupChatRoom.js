@@ -4,6 +4,13 @@ import User from '../models/User.js';
 export const createGroupChatRoom = async (req, res) => {
   const { name, description, createdBy } = req.body;
 
+  // Validate group name is not 'global'
+  if (name && name.toLowerCase() === 'global') {
+    return res.status(400).json({
+      message: 'Group name "global" is reserved and cannot be used',
+    });
+  }
+
   const newGroupChatRoom = new GroupChatRoom({
     name,
     description: description || '',

@@ -112,10 +112,7 @@ export default function ChatForm(props) {
               setShowEmojiPicker(!showEmojiPicker);
             }}
           >
-            <EmojiHappyIcon
-              className="h-7 w-7 text-white dark:text-pink-400"
-              aria-hidden="true"
-            />
+            <EmojiHappyIcon className="h-7 w-7 text-white dark:text-pink-400" aria-hidden="true" />
           </button>
 
           <button onClick={handleImageButtonClick} disabled={isCompressing}>

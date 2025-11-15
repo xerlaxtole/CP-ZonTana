@@ -48,6 +48,13 @@ export default function GroupChatRoom({ chatRoom }) {
     };
   }, [socket, chatRoom, isSocketConnected]);
 
+  // Sync member count when switching between groups
+  useEffect(() => {
+    if (chatRoom?.members) {
+      setMemberCount(chatRoom.members.length);
+    }
+  }, [chatRoom]);
+
   useEffect(() => {
     scrollRef.current?.scrollIntoView({
       behavior: 'smooth',
@@ -183,7 +190,7 @@ export default function GroupChatRoom({ chatRoom }) {
 
         {/* Message Input */}
         <div className="mb-4">
-        <ChatForm handleFormSubmit={handleFormSubmit} />
+          <ChatForm handleFormSubmit={handleFormSubmit} />
         </div>
       </div>
 

@@ -27,6 +27,7 @@ import GroupChatRoom from './models/GroupChatRoom.js';
 import GroupChatMessage from './models/GroupChatMessage.js';
 import ChatMessage from './models/ChatMessage.js';
 import ChatRoom from './models/ChatRoom.js';
+import User from './models/User.js';
 
 const app = express();
 
@@ -61,8 +62,23 @@ app.use('/api/message', chatMessageRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/group', groupRoutes);
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`Server listening on port ${PORT}`);
+
+  // Ensure global chat room exists
+  await GroupChatRoom.findOne({ name: 'global' }).then(async (room) => {
+    if (!room) {
+      const users = await User.find();
+
+      const globalRoom = new GroupChatRoom({
+        name: 'global',
+        members: users.map((user) => user.username),
+        avatar: 'https://cdn-icons-png.freepik.com/512/7296/7296866.png',
+      });
+      await globalRoom.save();
+      console.log('Created global chat room');
+    }
+  });
 });
 
 const io = new Server(server, {
@@ -207,6 +223,14 @@ io.on('connection', (socket) => {
   // CREATE GROUP
   socket.on('createGroup', async ({ name, description, createdBy }, callback) => {
     try {
+      // Validate group name is not 'global'
+      if (name && name.toLowerCase() === 'global') {
+        return callback({
+          success: false,
+          error: 'Group name "global" is reserved and cannot be used',
+        });
+      }
+
       const newGroupChatRoom = new GroupChatRoom({
         name,
         description: description || '',
@@ -235,6 +259,11 @@ io.on('connection', (socket) => {
 
       // Check if already a member
       if (groupChatRoom.members.includes(username)) {
+        // For global chat, allow re-joining (they should always be members)
+        if (groupName === 'global') {
+          return callback({ success: true, group: groupChatRoom });
+        }
+        // For other groups, reject duplicate joins
         return callback({ success: false, error: 'Already a member' });
       }
 
@@ -243,24 +272,26 @@ io.on('connection', (socket) => {
       await groupChatRoom.save();
 
       // Create system message for user joining
-      const systemMessage = new GroupChatMessage({
-        groupName,
-        sender: 'System',
-        message: `${username} joined ${groupName}`,
-        isSystemMessage: true,
-      });
-      await systemMessage.save();
+      if (groupName !== 'global') {
+        const systemMessage = new GroupChatMessage({
+          groupName,
+          sender: 'System',
+          message: `${username} joined ${groupName}`,
+          isSystemMessage: true,
+        });
+        await systemMessage.save();
 
-      // Broadcast system message to all group members
-      io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
-        _id: systemMessage._id,
-        groupName: systemMessage.groupName,
-        sender: systemMessage.sender,
-        message: systemMessage.message,
-        imageUrl: systemMessage.imageUrl,
-        isSystemMessage: systemMessage.isSystemMessage,
-        createdAt: systemMessage.createdAt,
-      });
+        // Broadcast system message to all group members
+        io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
+          _id: systemMessage._id,
+          groupName: systemMessage.groupName,
+          sender: systemMessage.sender,
+          message: systemMessage.message,
+          imageUrl: systemMessage.imageUrl,
+          isSystemMessage: systemMessage.isSystemMessage,
+          createdAt: systemMessage.createdAt,
+        });
+      }
 
       // Notify all group members about new member
       io.to(`grp:${groupName}`).emit('userJoinedGroup', {
