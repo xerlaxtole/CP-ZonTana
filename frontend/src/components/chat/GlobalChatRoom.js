@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { UserGroupIcon, UsersIcon } from '@heroicons/react/solid';
+import { UserGroupIcon } from '@heroicons/react/solid';
 import { useChat } from '../../contexts/ChatContext';
 
 import Message from './Message';
@@ -137,8 +137,8 @@ export default function GlobalChatRoom() {
     return <div className="lg:col-span-2 lg:block p-6">Loading chat...</div>;
   }
 
-  // 7. MOVED memberCount here, so it's calculated *after* chatRoom exists
-  const memberCount = chatRoom?.members?.length || 0;
+  // Calculate online count for global chat
+  const onlineCount = chatRoom?.members?.filter((member) => isUserOnline(member)).length || 0;
 
   return (
     <div className="lg:col-span-2 lg:block bg-white dark:bg-gray-700 dark:border-gray-ng-pink-500 ">
@@ -157,21 +157,10 @@ export default function GlobalChatRoom() {
                 <UserGroupIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {memberCount} member
-                {memberCount !== 1 ? 's' : ''} •{' '}
-                {chatRoom.members?.filter((member) => isUserOnline(member)).length || 0} online
+                {onlineCount} online
                 {chatRoom.description && ` • ${chatRoom.description}`}
               </p>
             </div>
-            {/* Members sidebar button */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 transition"
-              title="View members"
-            >
-              <UsersIcon className="w-5 h-5" />
-              <span className="hidden sm:inline">Members</span>
-            </button>
           </div>
         </div>
 

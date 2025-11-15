@@ -18,6 +18,11 @@ const CreateGroupModal = ({ isOpen, onClose, onCreateGroup }) => {
       return;
     }
 
+    if (groupName.trim().toLowerCase() === 'global') {
+      setError('Group name "global" is reserved and cannot be used');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onCreateGroup({

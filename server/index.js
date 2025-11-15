@@ -223,6 +223,14 @@ io.on('connection', (socket) => {
   // CREATE GROUP
   socket.on('createGroup', async ({ name, description, createdBy }, callback) => {
     try {
+      // Validate group name is not 'global'
+      if (name && name.toLowerCase() === 'global') {
+        return callback({
+          success: false,
+          error: 'Group name "global" is reserved and cannot be used',
+        });
+      }
+
       const newGroupChatRoom = new GroupChatRoom({
         name,
         description: description || '',
@@ -267,18 +275,18 @@ io.on('connection', (socket) => {
           isSystemMessage: true,
         });
         await systemMessage.save();
-      }
 
-      // Broadcast system message to all group members
-      io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
-        _id: systemMessage._id,
-        groupName: systemMessage.groupName,
-        sender: systemMessage.sender,
-        message: systemMessage.message,
-        imageUrl: systemMessage.imageUrl,
-        isSystemMessage: systemMessage.isSystemMessage,
-        createdAt: systemMessage.createdAt,
-      });
+        // Broadcast system message to all group members
+        io.to(`grp:${groupName}`).emit('receiveGroupMessage', {
+          _id: systemMessage._id,
+          groupName: systemMessage.groupName,
+          sender: systemMessage.sender,
+          message: systemMessage.message,
+          imageUrl: systemMessage.imageUrl,
+          isSystemMessage: systemMessage.isSystemMessage,
+          createdAt: systemMessage.createdAt,
+        });
+      }
 
       // Notify all group members about new member
       io.to(`grp:${groupName}`).emit('userJoinedGroup', {
